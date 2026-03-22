@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Applianzo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0f0e0c;
+    --surface:   #161410;
+    --panel:     #1c1916;
+    --card:      #211e1a;
+    --border:    #2e2a24;
+    --border-hi: #3d3830;
+    --burnt:     #c4541a;
+    --rust:      #a8411a;
+    --amber:     #e8891a;
+    --cream:     #faf6f0;
+    --muted:     #7a6e62;
+    --light:     #b8ada0;
+    --success:   #4caf72;
+    --danger:    #e05c5c;
+    --warn:      #e8891a;
+    --info:      #5ba4d4;
+    --super:     #b069e8;
+    --mono:      'JetBrains Mono', monospace;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* ─── ACCESS GATE ─── */
+  #accessGate {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0;
+  }
+  #accessGate.hidden { display: none; }
+
+  .gate-card {
+    width: 400px;
+    max-width: 92vw;
+    background: var(--panel);
+    border: 1px solid var(--border-hi);
+    border-radius: 16px;
+    padding: 40px 36px 36px;
+    animation: fadeUp .4s ease both;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+  .gate-icon { font-size: 38px; margin-bottom: 16px; display:block; }
+  .gate-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px; font-weight: 700;
+    color: var(--cream); margin-bottom: 4px;
+  }
+  .gate-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+  .gate-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 7px; display:block; }
+  .gate-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    color: var(--cream);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .gate-input:focus { border-color: var(--burnt); }
+  .gate-input::placeholder { color: var(--muted); }
+  .gate-error { font-size: 12px; color: var(--danger); margin-bottom: 12px; display:none; }
+  .gate-error.show { display:block; }
+  .gate-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--burnt);
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    font-size: 14px; font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background .2s, transform .15s;
+    margin-bottom: 16px;
+  }
+  .gate-btn:hover { background: var(--rust); transform: translateY(-1px); }
+  .gate-hint {
+    font-size: 11.5px; color: var(--muted);
+    line-height: 1.6; text-align: center;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .gate-hint code {
+    font-family: var(--mono);
+    background: var(--card);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--amber);
+    font-size: 11px;
+  }
+  .gate-back {
+    display: flex; align-items: center; justify-content: center;
+    gap: 5px;
+    font-size: 12.5px; color: var(--muted);
+    text-decoration: none; margin-top: 12px;
+    transition: color .2s;
+  }
+  .gate-back:hover { color: var(--amber); }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 50;
+    transition: transform .25s;
+  }
+
+  .sidebar-logo {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--burnt);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .logo-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 900;
+    color: var(--cream);
+  }
+  .logo-text em { color: var(--burnt); font-style: italic; }
+  .logo-sub { font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; margin-top: 1px; }
+
+  .sidebar-role {
+    margin: 14px 16px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 7px;
+    letter-spacing: .04em;
+  }
+  .role-superadmin { background: rgba(176,105,232,.15); color: var(--super); border: 1px solid rgba(176,105,232,.25); }
+  .role-admin { background: rgba(196,84,26,.15); color: var(--amber); border: 1px solid rgba(196,84,26,.25); }
+
+  .sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+  .nav-group-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .13em;
+    color: var(--muted);
+    padding: 12px 20px 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px;
+    font-size: 13.5px; font-weight: 500;
+    color: var(--light);
+    cursor: pointer;
+    transition: all .18s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+    position: relative;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.04); color: var(--cream); }
+  .nav-item.active {
+    background: rgba(196,84,26,.12);
+    color: var(--amber);
+    border-left-color: var(--burnt);
+    font-weight: 600;
+  }
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-family: var(--mono);
+  }
+  .nav-badge.green { background: var(--success); }
+  .nav-badge.amber { background: var(--warn); }
+
+  .superadmin-only { display: none; }
+  body.is-superadmin .superadmin-only { display: flex; }
+
+  .sidebar-footer {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .sidebar-user {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .user-av {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--burnt), var(--amber));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 600; color: var(--cream); }
+  .user-email { font-size: 11px; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+  .sidebar-signout {
+    width: 100%;
+    padding: 9px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-size: 12.5px; font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .18s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .sidebar-signout:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ─── MAIN ─── */
+  .main-wrap {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 40;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700;
+    color: var(--cream);
+  }
+  .page-breadcrumb {
+    font-size: 12px; color: var(--muted);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-btn {
+    padding: 7px 16px;
+    border-radius: 7px;
+    font-size: 12.5px; font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .18s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .btn-ghost-sm {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--light);
+  }
+  .btn-ghost-sm:hover { border-color: var(--burnt); color: var(--amber); }
+  .btn-primary-sm {
+    background: var(--burnt);
+    border: none; color: #fff;
+  }
+  .btn-primary-sm:hover { background: var(--rust); }
+  .notif-dot {
+    width: 8px; height: 8px;
+    background: var(--danger);
+    border-radius: 50%;
+    position: relative; top: -6px; left: -8px;
+    margin-right: -8px;
+  }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 28px 32px; flex: 1; }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  /* ─── STATS GRID ─── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    transition: border-color .2s, box-shadow .2s;
+    cursor: default;
+  }
+  .kpi-card:hover { border-color: var(--border-hi); box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+  .kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+  .kpi-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .kpi-icon.orange { background: rgba(196,84,26,.15); }
+  .kpi-icon.green  { background: rgba(76,175,114,.15); }
+  .kpi-icon.blue   { background: rgba(91,164,212,.15); }
+  .kpi-icon.purple { background: rgba(176,105,232,.15); }
+  .kpi-delta {
+    font-size: 11.5px; font-weight: 700;
+    padding: 3px 8px; border-radius: 6px;
+  }
+  .kpi-delta.up   { background: rgba(76,175,114,.15); color: var(--success); }
+  .kpi-delta.down { background: rgba(224,92,92,.12); color: var(--danger); }
+  .kpi-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px; font-weight: 700;
+    color: var(--cream); margin-bottom: 3px;
+  }
+  .kpi-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ─── TWO-COL GRID ─── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+  /* ─── PANEL CARD ─── */
+  .panel-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-header h3 {
+    font-size: 14px; font-weight: 700;
+    color: var(--cream); letter-spacing: .02em;
+  }
+  .panel-header .panel-link {
+    font-size: 12px; color: var(--amber);
+    text-decoration: none; font-weight: 600;
+    transition: color .2s;
+  }
+  .panel-header .panel-link:hover { color: var(--burnt); }
+  .panel-body { padding: 20px; }
+
+  /* ─── TABLE ─── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table th {
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    padding: 0 14px 10px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 12px 14px;
+    color: var(--light);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,.025); }
+
+  .td-bold { font-weight: 600; color: var(--cream); }
+  .td-mono { font-family: var(--mono); font-size: 12px; }
+  .td-muted { color: var(--muted); font-size: 12px; }
+
+  /* ─── BADGES / PILLS ─── */
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .04em;
+  }
+  .pill-super   { background: rgba(176,105,232,.15); color: var(--super); border: 1px solid rgba(176,105,232,.3); }
+  .pill-admin   { background: rgba(196,84,26,.15); color: var(--amber); border: 1px solid rgba(196,84,26,.3); }
+  .pill-user    { background: rgba(255,255,255,.07); color: var(--light); border: 1px solid var(--border); }
+  .pill-active  { background: rgba(76,175,114,.12); color: var(--success); border: 1px solid rgba(76,175,114,.3); }
+  .pill-banned  { background: rgba(224,92,92,.12); color: var(--danger); border: 1px solid rgba(224,92,92,.3); }
+  .pill-pending { background: rgba(232,137,26,.12); color: var(--warn); border: 1px solid rgba(232,137,26,.3); }
+  .pill-live    { background: rgba(76,175,114,.12); color: var(--success); }
+  .pill-draft   { background: rgba(255,255,255,.07); color: var(--muted); }
+
+  /* ─── ACTION BUTTONS ─── */
+  .action-row { display: flex; gap: 6px; align-items: center; }
+  .act-btn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11.5px; font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--light);
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .act-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .act-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .act-btn.success:hover { border-color: var(--success); color: var(--success); }
+
+  /* ─── ACTIVITY FEED ─── */
+  .activity-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .act-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+  .act-dot.orange { background: var(--burnt); }
+  .act-dot.green  { background: var(--success); }
+  .act-dot.red    { background: var(--danger); }
+  .act-dot.blue   { background: var(--info); }
+  .act-dot.purple { background: var(--super); }
+  .act-msg { font-size: 13px; color: var(--light); line-height: 1.4; }
+  .act-time { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .act-who { font-weight: 600; color: var(--cream); }
+
+  /* ─── CHART BAR ─── */
+  .mini-chart { display: flex; flex-direction: column; gap: 8px; }
+  .chart-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .chart-label { width: 90px; color: var(--muted); text-align: right; flex-shrink: 0; font-size: 11.5px; }
+  .chart-bar-wrap { flex: 1; height: 8px; background: var(--panel); border-radius: 4px; overflow: hidden; }
+  .chart-bar { height: 100%; border-radius: 4px; background: var(--burnt); transition: width .6s ease; }
+  .chart-bar.green { background: var(--success); }
+  .chart-bar.blue  { background: var(--info); }
+  .chart-bar.amber { background: var(--amber); }
+  .chart-val { width: 36px; color: var(--light); text-align: right; font-family: var(--mono); font-size: 11px; }
+
+  /* ─── FORM FIELDS ─── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-full { grid-column: 1 / -1; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .form-control {
+    width: 100%;
+    padding: 10px 13px;
+    background: var(--panel);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--cream);
+    font-size: 13.5px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .form-control:focus { border-color: var(--burnt); }
+  .form-control::placeholder { color: var(--muted); }
+  select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a6e62' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    cursor: pointer;
+    background-color: var(--panel);
+  }
+  select.form-control option { background: var(--card); }
+  textarea.form-control { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  .section-actions {
+    display: flex; gap: 10px; align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    display: flex; align-items: center;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    gap: 8px;
+    flex: 1; min-width: 200px; max-width: 320px;
+  }
+  .search-box input {
+    background: none; border: none; outline: none;
+    color: var(--cream); font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    width: 100%;
+  }
+  .search-box input::placeholder { color: var(--muted); }
+  .search-icon { color: var(--muted); font-size: 14px; }
+
+  /* ─── SUPERADMIN SECTION ─── */
+  .superadmin-section { display: none; }
+  body.is-superadmin .superadmin-section { display: block; }
+
+  .role-select-wrap { position: relative; }
+  .danger-zone {
+    border: 1px solid rgba(224,92,92,.3);
+    border-radius: 12px;
+    padding: 20px;
+    background: rgba(224,92,92,.04);
+    margin-top: 20px;
+  }
+  .danger-zone h4 {
+    font-size: 13px; font-weight: 700;
+    color: var(--danger); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .danger-zone p { font-size: 12.5px; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
+
+  /* ─── TOGGLE ─── */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-info h4 { font-size: 13.5px; font-weight: 600; color: var(--cream); margin-bottom: 2px; }
+  .toggle-info p  { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .toggle {
+    position: relative;
+    width: 42px; height: 22px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0;
+    background: var(--border);
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    left: 3px; top: 3px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform .2s, background .2s;
+  }
+  .toggle input:checked + .slider { background: rgba(196,84,26,.3); }
+  .toggle input:checked + .slider::before { transform: translateX(20px); background: var(--burnt); }
+
+  /* ─── COLOR SWATCH ─── */
+  .color-picker-row { display: flex; align-items: center; gap: 10px; }
+  input[type="color"] {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border); border-radius: 8px;
+    cursor: pointer; background: none; padding: 0;
+  }
+
+  /* ─── NOTIFICATION ─── */
+  .notif {
+    position: fixed; top: 16px; right: 16px;
+    background: var(--panel);
+    color: var(--cream);
+    padding: 11px 18px;
+    border-radius: 9px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 8px 28px rgba(0,0,0,.4);
+    z-index: 99999;
+    transform: translateX(120%);
+    transition: transform .3s;
+    border-left: 3px solid var(--amber);
+    max-width: 300px;
+  }
+  .notif.show { transform: translateX(0); }
+
+  /* ─── RESPONSIVE ─── */
+  .field-err { font-size:11px; color:var(--danger); margin-top:4px; display:none; }
+  .field-err.show { display:block; }
+  .img-thumb { width:36px; height:36px; border-radius:6px; object-fit:cover; border:1px solid var(--border); vertical-align:middle; }
+
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    .three-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 800px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: none; }
+    .main-wrap { margin-left: 0; }
+    .two-col { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .content { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ ACCESS GATE ═══════════════════ -->
+<div id="accessGate">
+  <div class="gate-card">
+    <span class="gate-icon">🛡️</span>
+    <div class="gate-title">Admin Access</div>
+    <p class="gate-sub">This panel is restricted to administrators only. Sign in with your admin credentials to continue.</p>
+
+    <label class="gate-label">Email</label>
+    <input type="email" class="gate-input" id="gate-email" placeholder="admin@applianzo.com">
+
+    <label class="gate-label">Password</label>
+    <input type="password" class="gate-input" id="gate-password" placeholder="Admin password"
+      onkeydown="if(event.key==='Enter') verifyAccess()">
+
+    <div class="gate-error" id="gate-error">Invalid credentials. Access denied.</div>
+
+    <button class="gate-btn" onclick="verifyAccess()">Access Admin Panel →</button>
+
+    <div class="gate-hint" id="gate-hint-text">
+      Super Admin login:<br>
+      <code id="hint-email"></code><br>
+      Password: <code>Esrai@2025#Super</code>
+    </div>
+  </div>
+  <a href="applianzo.html" class="gate-back">← Back to Applianzo</a>
+</div>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🍳</div>
+    <div>
+      <div class="logo-text">Appl<em>ianzo</em></div>
+      <div class="logo-sub">Admin Panel</div>
+    </div>
+  </div>
+
+  <div class="sidebar-role" id="roleIndicator"></div>
+
+  <div class="sidebar-nav">
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-item active" onclick="showSection('dashboard')" href="#">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item" onclick="showSection('analytics')" href="#">
+      <span class="nav-icon">📈</span> Analytics
+    </a>
+
+    <div class="nav-group-label">Content</div>
+    <a class="nav-item" onclick="showSection('products')" href="#">
+      <span class="nav-icon">🛒</span> Products
+      <span class="nav-badge amber" id="nav-badge-products">0</span>
+    </a>
+    <a class="nav-item" onclick="showSection('categories')" href="#">
+      <span class="nav-icon">🏷️</span> Categories
+      <span class="nav-badge green" id="nav-badge-categories">0</span>
+    </a>
+    <a class="nav-item" onclick="showSection('reviews')" href="#">
+      <span class="nav-icon">⭐</span> Reviews
+      <span class="nav-badge" id="nav-badge-reviews">0</span>
+    </a>
+    <a class="nav-item" onclick="showSection('content')" href="#">
+      <span class="nav-icon">✍️</span> Site Content
+    </a>
+
+    <div class="nav-group-label">Community</div>
+    <a class="nav-item" onclick="showSection('users')" href="#">
+      <span class="nav-icon">👥</span> Users
+      <span class="nav-badge green">24</span>
+    </a>
+
+    <!-- Super Admin only items -->
+    <div class="nav-group-label superadmin-only" style="display:none;">Super Admin</div>
+    <a class="nav-item superadmin-only" onclick="showSection('admins')" href="#">
+      <span class="nav-icon">🛡️</span> Manage Admins
+    </a>
+    <a class="nav-item superadmin-only" onclick="showSection('settings')" href="#">
+      <span class="nav-icon">⚙️</span> Site Settings
+    </a>
+    <a class="nav-item superadmin-only" onclick="showSection('logs')" href="#">
+      <span class="nav-icon">🔍</span> Audit Logs
+    </a>
+
+    <div class="nav-group-label">Account</div>
+    <a class="nav-item" href="applianzo.html" target="_blank">
+      <span class="nav-icon">🌐</span> View Site
+    </a>
+    <a class="nav-item" href="applianzo-profile.html">
+      <span class="nav-icon">👤</span> My Profile
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-av" id="sidebar-avatar">A</div>
+      <div>
+        <div class="user-name" id="sidebar-name">Admin</div>
+        <div class="user-email" id="sidebar-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b3d2d7dedaddf3d2c3c3dfdad2ddc9dc9dd0dcde">[email&#160;protected]</a></div>
+      </div>
+    </div>
+    <button class="sidebar-signout" onclick="signOut()">⟵ Sign Out</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<div class="main-wrap">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="page-title" id="topbar-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <a href="applianzo.html" target="_blank">
+        <button class="topbar-btn btn-ghost-sm">🌐 View Site</button>
+      </a>
+      <button class="topbar-btn btn-primary-sm" onclick="showSection('products')">+ Add Product</button>
+    </div>
+  </div>
+
+  <!-- ═══ CONTENT ═══ -->
+  <div class="content">
+
+    <!-- ─── DASHBOARD ─── -->
+    <div class="section active" id="sec-dashboard">
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon orange">🛒</div>
+            <span class="kpi-delta up">↑ 12%</span>
+          </div>
+          <div class="kpi-val">6</div>
+          <div class="kpi-label">Products Listed</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon green">👥</div>
+            <span class="kpi-delta up">↑ 8%</span>
+          </div>
+          <div class="kpi-val">24</div>
+          <div class="kpi-label">Registered Users</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon blue">⭐</div>
+            <span class="kpi-delta up">↑ 5%</span>
+          </div>
+          <div class="kpi-val">18</div>
+          <div class="kpi-label">Total Reviews</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <div class="kpi-icon purple">💰</div>
+            <span class="kpi-delta down">↓ 3%</span>
+          </div>
+          <div class="kpi-val">$247</div>
+          <div class="kpi-label">Est. Affiliate Rev.</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+
+        <!-- Recent Activity -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Recent Activity</h3>
+            <a class="panel-link" href="#" onclick="showSection('logs')">View all →</a>
+          </div>
+          <div class="panel-body">
+            <div class="activity-item">
+              <div class="act-dot green"></div>
+              <div>
+                <div class="act-msg"><span class="act-who">Sarah M.</span> left a 5★ review on Vitamix Blender</div>
+                <div class="act-time">2 hours ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot orange"></div>
+              <div>
+                <div class="act-msg"><span class="act-who">Admin</span> updated price on Le Creuset Dutch Oven</div>
+                <div class="act-time">5 hours ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot blue"></div>
+              <div>
+                <div class="act-msg"><span class="act-who">James T.</span> created a new account</div>
+                <div class="act-time">Yesterday</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot red"></div>
+              <div>
+                <div class="act-msg"><span class="act-who">Admin</span> flagged a review for moderation</div>
+                <div class="act-time">Yesterday</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="act-dot purple"></div>
+              <div>
+                <div class="act-msg"><span class="act-who">Super Admin</span> promoted user to Admin role</div>
+                <div class="act-time">2 days ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Affiliate Performance -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Affiliate Performance</h3>
+            <a class="panel-link" href="#" onclick="showSection('analytics')">Analytics →</a>
+          </div>
+          <div class="panel-body">
+            <div class="mini-chart">
+              <div class="chart-row">
+                <div class="chart-label">Vitamix 5200</div>
+                <div class="chart-bar-wrap"><div class="chart-bar" style="width:82%"></div></div>
+                <div class="chart-val">$94</div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Breville Oracle</div>
+                <div class="chart-bar-wrap"><div class="chart-bar amber" style="width:61%"></div></div>
+                <div class="chart-val">$71</div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Le Creuset</div>
+                <div class="chart-bar-wrap"><div class="chart-bar green" style="width:45%"></div></div>
+                <div class="chart-val">$52</div>
+              </div>
+              <div class="chart-row">
+                <div class="chart-label">Wüsthof Knife</div>
+                <div class="chart-bar-wrap"><div class="chart-bar blue" style="width:26%"></div></div>
+                <div class="chart-val">$30</div>
+              </div>
+            </div>
+            <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--border); display:flex; justify-content:space-between; font-size:12.5px;">
+              <span style="color:var(--muted)">Total this month</span>
+              <span style="color:var(--amber); font-weight:700; font-family:var(--mono)">$247.00</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="panel-card">
+        <div class="panel-header"><h3>Quick Actions</h3></div>
+        <div class="panel-body" style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button class="topbar-btn btn-ghost-sm" onclick="showSection('products')">📦 Add Product</button>
+          <button class="topbar-btn btn-ghost-sm" onclick="showSection('categories')">🏷️ Manage Categories</button>
+          <button class="topbar-btn btn-ghost-sm" onclick="showSection('reviews')">⭐ Moderate Reviews</button>
+          <button class="topbar-btn btn-ghost-sm" onclick="showSection('users')">👥 Manage Users</button>
+          <button class="topbar-btn btn-ghost-sm" onclick="showSection('content')">✍️ Edit Site Content</button>
+          <button class="topbar-btn btn-ghost-sm superadmin-only" style="display:none;" onclick="showSection('settings')">⚙️ Site Settings</button>
+          <button class="topbar-btn btn-ghost-sm superadmin-only" style="display:none;" onclick="showSection('admins')">🛡️ Admin Roles</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── ANALYTICS ─── -->
+    <div class="section" id="sec-analytics">
+      <div class="kpi-grid" style="margin-bottom:24px;">
+        <div class="kpi-card">
+          <div class="kpi-top"><div class="kpi-icon blue">👁️</div><span class="kpi-delta up">↑ 22%</span></div>
+          <div class="kpi-val">4,821</div><div class="kpi-label">Page Views (30d)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top"><div class="kpi-icon green">🔗</div><span class="kpi-delta up">↑ 18%</span></div>
+          <div class="kpi-val">312</div><div class="kpi-label">Affiliate Clicks</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top"><div class="kpi-icon orange">💸</div><span class="kpi-delta down">↓ 3%</span></div>
+          <div class="kpi-val">4.7%</div><div class="kpi-label">Conversion Rate</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-top"><div class="kpi-icon purple">🌍</div><span class="kpi-delta up">↑ 9%</span></div>
+          <div class="kpi-val">12</div><div class="kpi-label">Countries</div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="panel-card">
+          <div class="panel-header"><h3>Top Traffic Sources</h3></div>
+          <div class="panel-body">
+            <div class="mini-chart">
+              <div class="chart-row"><div class="chart-label">Organic Search</div><div class="chart-bar-wrap"><div class="chart-bar" style="width:71%"></div></div><div class="chart-val">71%</div></div>
+              <div class="chart-row"><div class="chart-label">Direct</div><div class="chart-bar-wrap"><div class="chart-bar amber" style="width:18%"></div></div><div class="chart-val">18%</div></div>
+              <div class="chart-row"><div class="chart-label">Social</div><div class="chart-bar-wrap"><div class="chart-bar blue" style="width:8%"></div></div><div class="chart-val">8%</div></div>
+              <div class="chart-row"><div class="chart-label">Referral</div><div class="chart-bar-wrap"><div class="chart-bar green" style="width:3%"></div></div><div class="chart-val">3%</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Top Countries</h3></div>
+          <div class="panel-body">
+            <div class="mini-chart">
+              <div class="chart-row"><div class="chart-label">🇮🇳 India</div><div class="chart-bar-wrap"><div class="chart-bar" style="width:44%"></div></div><div class="chart-val">44%</div></div>
+              <div class="chart-row"><div class="chart-label">🇺🇸 USA</div><div class="chart-bar-wrap"><div class="chart-bar amber" style="width:31%"></div></div><div class="chart-val">31%</div></div>
+              <div class="chart-row"><div class="chart-label">🇬🇧 UK</div><div class="chart-bar-wrap"><div class="chart-bar blue" style="width:12%"></div></div><div class="chart-val">12%</div></div>
+              <div class="chart-row"><div class="chart-label">🇦🇺 Australia</div><div class="chart-bar-wrap"><div class="chart-bar green" style="width:8%"></div></div><div class="chart-val">8%</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── PRODUCTS ─── -->
+    <div class="section" id="sec-products">
+      <div class="section-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search products…" oninput="filterProductsTable(this.value)">
+        </div>
+        <select class="form-control" id="products-filter-cat" onchange="filterProductsTable(document.querySelector('#sec-products .search-box input').value)" style="width:160px; padding:8px 12px; font-size:13px;">
+          <option value="">All Categories</option>
+        </select>
+        <select class="form-control" id="products-filter-status" onchange="filterProductsTable(document.querySelector('#sec-products .search-box input').value)" style="width:130px; padding:8px 12px; font-size:13px;">
+          <option value="">All Status</option>
+          <option value="live">Live</option>
+          <option value="draft">Draft</option>
+        </select>
+        <button class="topbar-btn btn-primary-sm" onclick="openProductForm()">+ Add Product</button>
+      </div>
+
+      <!-- Products Table -->
+      <div class="panel-card" style="margin-bottom:20px;">
+        <div class="panel-header">
+          <h3>Products <span id="products-count" style="color:var(--muted); font-weight:400; font-size:13px;"></span></h3>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="min-width:800px;">
+            <thead>
+              <tr><th style="width:40px;"></th><th>Product</th><th>Brand</th><th>Category</th><th>Price</th><th>Was</th><th>Rating</th><th>Affiliate Link</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+        <div id="products-empty" style="padding:32px; text-align:center; color:var(--muted); font-size:13px; display:none;">No products yet. Click "+ Add Product" to get started.</div>
+      </div>
+
+      <!-- Add / Edit Product Form -->
+      <div class="panel-card" id="productFormCard" style="display:none;">
+        <div class="panel-header">
+          <h3 id="productFormTitle">➕ Add New Product</h3>
+          <button class="topbar-btn btn-ghost-sm" onclick="closeProductForm()">✕ Cancel</button>
+        </div>
+        <div class="panel-body">
+          <input type="hidden" id="pf-id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Product Name *</label>
+              <input type="text" class="form-control" id="pf-name" placeholder="e.g. Ninja AF101 Air Fryer">
+              <div class="field-err" id="pf-name-err">Required.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Brand *</label>
+              <input type="text" class="form-control" id="pf-brand" placeholder="e.g. Ninja">
+              <div class="field-err" id="pf-brand-err">Required.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select class="form-control" id="pf-category">
+                <option value="">— Select category —</option>
+              </select>
+              <div class="field-err" id="pf-cat-err">Select a category.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Badge / Tag</label>
+              <select class="form-control" id="pf-badge">
+                <option value="">None</option>
+                <option value="Editor's Pick">Editor's Pick</option>
+                <option value="Best Seller">Best Seller</option>
+                <option value="Best Value">Best Value</option>
+                <option value="New 2025">New 2025</option>
+                <option value="Hot Deal">Hot Deal</option>
+                <option value="Top Pick">Top Pick</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Current Price ($) *</label>
+              <input type="text" class="form-control" id="pf-price" placeholder="0.00">
+              <div class="field-err" id="pf-price-err">Enter a valid price.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Original / Was Price ($)</label>
+              <input type="text" class="form-control" id="pf-was" placeholder="0.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Star Rating (0–5) *</label>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input type="range" id="pf-rating-range" min="1" max="5" step="0.1" value="4.5" style="flex:1;" oninput="document.getElementById('pf-rating-val').textContent=parseFloat(this.value).toFixed(1)">
+                <span id="pf-rating-val" style="font-family:var(--mono); font-size:15px; font-weight:700; color:var(--amber); min-width:28px;">4.5</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Review Count</label>
+              <input type="text" class="form-control" id="pf-reviews" placeholder="e.g. 2,341">
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label">Amazon Affiliate Link *</label>
+              <div style="position:relative;">
+                <input type="url" class="form-control" id="pf-affiliate" placeholder="https://amazon.com/dp/XXXXXXX?tag=yourtag-20" style="font-family:var(--mono); font-size:12px;">
+                <button onclick="validateAffiliateLink()" type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(91,164,212,.15);border:1px solid rgba(91,164,212,.3);color:var(--info);padding:4px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Validate ↗</button>
+              </div>
+              <div class="field-err" id="pf-aff-err">Enter a valid URL.</div>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label">Product Image</label>
+              <div style="display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+                <input type="url" class="form-control" id="pf-image" placeholder="https://…/product.jpg or upload below" style="flex:1; min-width:200px;" oninput="previewProductImage()">
+                <label style="display:flex; align-items:center; gap:6px; padding:9px 14px; background:var(--panel); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:12.5px; color:var(--light); white-space:nowrap; font-weight:500;">
+                  📁 Upload
+                  <input type="file" accept="image/*" style="display:none;" onchange="handleProductImageUpload(this)">
+                </label>
+              </div>
+              <div id="pf-image-preview" style="margin-top:10px; display:none;">
+                <img id="pf-img-thumb" src="" alt="Preview" style="width:80px; height:80px; border-radius:8px; object-fit:cover; border:1px solid var(--border);">
+                <button onclick="clearProductImage()" style="display:block; margin-top:5px; font-size:11px; color:var(--danger); background:none; border:none; cursor:pointer;">Remove image</button>
+              </div>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label">Product Description</label>
+              <textarea class="form-control" id="pf-desc" placeholder="Write a compelling product description that highlights key benefits…" style="min-height:80px;"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pro Point 1</label>
+              <input type="text" class="form-control" id="pf-pro1" placeholder="e.g. Aircraft-grade stainless blades">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pro Point 2</label>
+              <input type="text" class="form-control" id="pf-pro2" placeholder="e.g. Dishwasher-safe">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pro Point 3</label>
+              <input type="text" class="form-control" id="pf-pro3" placeholder="e.g. 5-year warranty">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-control" id="pf-status">
+                <option value="draft">Draft</option>
+                <option value="live">Live</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="topbar-btn btn-primary-sm" onclick="saveProduct()" style="padding:10px 24px;">💾 Save Product</button>
+            <button class="topbar-btn btn-ghost-sm" style="background:rgba(76,175,114,.1); border-color:rgba(76,175,114,.3); color:var(--success);" onclick="saveProduct('live')">🚀 Save &amp; Publish</button>
+            <button class="topbar-btn btn-ghost-sm" onclick="closeProductForm()">Cancel</button>
+            <span style="font-size:12px; color:var(--muted); margin-left:auto;">* Required fields</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── REVIEWS ─── -->
+    <div class="section" id="sec-reviews">
+      <div class="section-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search reviews…" oninput="filterReviewsTable(this.value)">
+        </div>
+        <select class="form-control" id="reviews-filter-status" onchange="filterReviewsTable('')" style="width:150px; padding:8px 12px; font-size:13px;">
+          <option value="">All Status</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <button class="topbar-btn btn-primary-sm" onclick="openReviewForm()">+ Add Review</button>
+      </div>
+
+      <!-- Reviews Table -->
+      <div class="panel-card" style="margin-bottom:20px;">
+        <div class="panel-header">
+          <h3>Reviews <span id="reviews-count" style="color:var(--muted); font-weight:400; font-size:13px;"></span></h3>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="min-width:760px;">
+            <thead>
+              <tr><th>Reviewer</th><th>Product</th><th>Rating</th><th>Title</th><th>Review Text</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="reviews-tbody"></tbody>
+          </table>
+        </div>
+        <div id="reviews-empty" style="padding:32px; text-align:center; color:var(--muted); font-size:13px; display:none;">No reviews yet.</div>
+      </div>
+
+      <!-- Add / Edit Review Form -->
+      <div class="panel-card" id="reviewFormCard" style="display:none;">
+        <div class="panel-header">
+          <h3 id="reviewFormTitle">➕ Add Review</h3>
+          <button class="topbar-btn btn-ghost-sm" onclick="closeReviewForm()">✕ Cancel</button>
+        </div>
+        <div class="panel-body">
+          <input type="hidden" id="rf-id">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Reviewer Name *</label>
+              <input type="text" class="form-control" id="rf-name" placeholder="e.g. Sarah M.">
+              <div class="field-err" id="rf-name-err">Required.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Product *</label>
+              <select class="form-control" id="rf-product">
+                <option value="">— Select product —</option>
+              </select>
+              <div class="field-err" id="rf-prod-err">Select a product.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Star Rating *</label>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input type="range" id="rf-rating-range" min="1" max="5" step="1" value="5" style="flex:1;" oninput="updateReviewStars(this.value)">
+                <span id="rf-stars-display" style="color:var(--amber); font-size:16px; letter-spacing:2px; min-width:90px;">★★★★★</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Verified Purchase</label>
+              <label style="display:flex; align-items:center; gap:8px; margin-top:8px; cursor:pointer; font-size:13.5px; color:var(--light);">
+                <input type="checkbox" id="rf-verified" checked style="width:16px;height:16px;accent-color:var(--success);"> Mark as verified purchase
+              </label>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label">Review Headline *</label>
+              <input type="text" class="form-control" id="rf-title" placeholder='e.g. "Game changer for meal prep"'>
+              <div class="field-err" id="rf-title-err">Required.</div>
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label">Review Body *</label>
+              <textarea class="form-control" id="rf-body" placeholder="Write the full review text…" style="min-height:90px;"></textarea>
+              <div class="field-err" id="rf-body-err">Required.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-control" id="rf-status">
+                <option value="approved">Approved</option>
+                <option value="pending">Pending</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Featured</label>
+              <label style="display:flex; align-items:center; gap:8px; margin-top:8px; cursor:pointer; font-size:13.5px; color:var(--light);">
+                <input type="checkbox" id="rf-featured" style="width:16px;height:16px;accent-color:var(--amber);"> Pin to homepage
+              </label>
+            </div>
+          </div>
+          <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="topbar-btn btn-primary-sm" onclick="saveReview()" style="padding:10px 24px;">💾 Save Review</button>
+            <button class="topbar-btn btn-ghost-sm" onclick="closeReviewForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CATEGORIES ─── -->
+    <div class="section" id="sec-categories">
+      <div class="section-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search categories…" oninput="filterCategoriesTable(this.value)">
+        </div>
+        <button class="topbar-btn btn-primary-sm" onclick="openCategoryForm()">+ Add Category</button>
+      </div>
+
+      <div class="two-col" style="align-items:start;">
+        <!-- Category Table -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3>Categories <span id="categories-count" style="color:var(--muted); font-weight:400; font-size:13px;"></span></h3>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Icon</th><th>Name</th><th>Slug</th><th>Products</th><th>Actions</th></tr></thead>
+            <tbody id="categories-tbody"></tbody>
+          </table>
+          <div id="categories-empty" style="padding:24px; text-align:center; color:var(--muted); font-size:13px; display:none;">No categories yet.</div>
+        </div>
+
+        <!-- Add / Edit Category Form -->
+        <div class="panel-card" id="categoryFormCard">
+          <div class="panel-header">
+            <h3 id="categoryFormTitle">➕ Add Category</h3>
+          </div>
+          <div class="panel-body">
+            <input type="hidden" id="cf-id">
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">Category Name *</label>
+              <input type="text" class="form-control" id="cf-name" placeholder="e.g. Air Fryers" oninput="autoCatSlug()">
+              <div class="field-err" id="cf-name-err">Required.</div>
+            </div>
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">Slug (auto-generated)</label>
+              <input type="text" class="form-control" id="cf-slug" placeholder="e.g. air-fryers" style="font-family:var(--mono); font-size:13px;">
+            </div>
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">Icon / Emoji</label>
+              <input type="text" class="form-control" id="cf-icon" placeholder="e.g. 🌬️" maxlength="4" style="font-size:20px; text-align:center; width:80px;">
+            </div>
+            <div class="form-group" style="margin-bottom:20px;">
+              <label class="form-label">Description</label>
+              <textarea class="form-control" id="cf-desc" placeholder="Short description of this category…" style="min-height:60px;"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="topbar-btn btn-primary-sm" onclick="saveCategory()">💾 Save Category</button>
+              <button class="topbar-btn btn-ghost-sm" onclick="clearCategoryForm()">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SITE CONTENT ─── -->
+    <div class="section" id="sec-content">
+      <div class="two-col">
+        <div class="panel-card">
+          <div class="panel-header"><h3>Hero Section</h3></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Hero Headline</label><input type="text" class="form-control" id="sc-headline" value="The Kitchen Gear Worth Owning"></div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Hero Subtext</label><textarea class="form-control" id="sc-subtext" style="min-height:64px;">We test every appliance so you don't have to. Honest reviews, real comparisons, and the best prices on Amazon.</textarea></div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">CTA Button Text</label><input type="text" class="form-control" id="sc-cta" value="Browse Top Picks →"></div>
+            <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Hero Badge Text</label><input type="text" class="form-control" id="sc-badge" value="✨ Editor's Picks 2025"></div>
+            <button class="topbar-btn btn-primary-sm" onclick="saveContent('hero')">Save Hero</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Announcement Bar</h3></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Announcement Text</label><input type="text" class="form-control" id="sc-announcement" value="🔥 Amazon Prime Deal: Up to 40% off KitchenAid appliances this week only →"></div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Link URL</label><input type="url" class="form-control" id="sc-ann-link" value="https://amazon.com"></div>
+            <div class="toggle-row" style="border:none; padding:0 0 14px;">
+              <div class="toggle-info"><h4>Show Announcement Bar</h4><p>Toggle visibility on the live site</p></div>
+              <label class="toggle"><input type="checkbox" id="sc-ann-visible" checked><span class="slider"></span></label>
+            </div>
+            <button class="topbar-btn btn-primary-sm" onclick="saveContent('announcement')">Save Bar</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Amazon Affiliate Settings</h3></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:14px;">
+              <label class="form-label">Associate / Affiliate Tag</label>
+              <input type="text" class="form-control" id="sc-tag" placeholder="yourtag-20" style="font-family:var(--mono);">
+              <div style="font-size:11px; color:var(--muted); margin-top:5px;">Appended to all product links as <code style="font-family:var(--mono);color:var(--amber);">?tag=yourtag-20</code></div>
+            </div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Default Amazon Store</label>
+              <select class="form-control" id="sc-store">
+                <option value="amazon.com">amazon.com (US)</option>
+                <option value="amazon.in" selected>amazon.in (India)</option>
+                <option value="amazon.co.uk">amazon.co.uk (UK)</option>
+                <option value="amazon.com.au">amazon.com.au (AU)</option>
+                <option value="amazon.ca">amazon.ca (Canada)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:16px;">
+              <label class="form-label">Global Affiliate Link Override</label>
+              <input type="url" class="form-control" id="sc-global-link" placeholder="Leave blank to use per-product links" style="font-family:var(--mono); font-size:12px;">
+            </div>
+            <button class="topbar-btn btn-primary-sm" onclick="saveContent('affiliate')">Save Affiliate Settings</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Promo Banner</h3></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Eyebrow Text</label><input type="text" class="form-control" id="sc-promo-eyebrow" value="🔥 Limited Time Offer"></div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Banner Headline</label><input type="text" class="form-control" id="sc-promo-title" value="Upgrade Your Kitchen With Amazon Prime"></div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Banner Subtext</label><textarea class="form-control" id="sc-promo-sub" style="min-height:56px;">Every product we review is linked directly to Amazon. Get free shipping, easy returns, and the best prices.</textarea></div>
+            <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Button Text</label><input type="text" class="form-control" id="sc-promo-btn" value="🛒 Shop Our Picks on Amazon"></div>
+            <button class="topbar-btn btn-primary-sm" onclick="saveContent('promo')">Save Promo</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Affiliate Disclosure</h3></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Disclosure Text</label><textarea class="form-control" id="sc-disclosure" style="min-height:80px;">Applianzo participates in the Amazon Services LLC Associates Program. We earn a commission on qualifying purchases at no extra cost to you.</textarea></div>
+            <button class="topbar-btn btn-primary-sm" onclick="saveContent('disclosure')">Save Disclosure</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Site Stats (Hero)</h3></div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="form-group"><label class="form-label">Stat 1 Number</label><input type="text" class="form-control" id="sc-stat1-num" value="200+"></div>
+              <div class="form-group"><label class="form-label">Stat 1 Label</label><input type="text" class="form-control" id="sc-stat1-lbl" value="Products Tested"></div>
+              <div class="form-group"><label class="form-label">Stat 2 Number</label><input type="text" class="form-control" id="sc-stat2-num" value="12K+"></div>
+              <div class="form-group"><label class="form-label">Stat 2 Label</label><input type="text" class="form-control" id="sc-stat2-lbl" value="Happy Readers"></div>
+              <div class="form-group"><label class="form-label">Stat 3 Number</label><input type="text" class="form-control" id="sc-stat3-num" value="4.8★"></div>
+              <div class="form-group"><label class="form-label">Stat 3 Label</label><input type="text" class="form-control" id="sc-stat3-lbl" value="Avg. Rating"></div>
+            </div>
+            <div style="margin-top:16px;"><button class="topbar-btn btn-primary-sm" onclick="saveContent('stats')">Save Stats</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Super Admin: Remove content blocks -->
+      <div class="superadmin-section" style="margin-top:8px;">
+        <div class="danger-zone">
+          <h4>⚠️ Content Reset (Super Admin only)</h4>
+          <p>Permanently reset site content sections to their defaults. These actions cannot be undone.</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="topbar-btn" style="background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);color:var(--danger);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:8px 14px;" onclick="resetContent('hero')">Reset Hero</button>
+            <button class="topbar-btn" style="background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);color:var(--danger);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:8px 14px;" onclick="resetContent('announcement')">Reset Announcement</button>
+            <button class="topbar-btn" style="background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);color:var(--danger);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:8px 14px;" onclick="resetContent('affiliate')">Reset Affiliate Tag</button>
+            <button class="topbar-btn" style="background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);color:var(--danger);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;border-radius:7px;padding:8px 14px;" onclick="resetContent('all')">Reset All Content</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── USERS ─── -->
+    <div class="section" id="sec-users">
+      <div class="section-actions">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" placeholder="Search users…" oninput="filterTable(this,'users-tbody')">
+        </div>
+      </div>
+      <div class="panel-card">
+        <table class="data-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Location</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr>
+              <td class="td-bold">Sarah M.</td>
+              <td class="td-mono td-muted"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="512230233039113429303c213d347f323e3c">[email&#160;protected]</a></td>
+              <td class="td-muted">Mumbai, IN</td>
+              <td><span class="pill pill-user">User</span></td>
+              <td><span class="pill pill-active">Active</span></td>
+              <td class="td-muted">Mar 2025</td>
+              <td><div class="action-row"><button class="act-btn" onclick="notify('Viewing user')">View</button><button class="act-btn danger" onclick="notify('User banned')">Ban</button></div></td>
+            </tr>
+            <tr>
+              <td class="td-bold">James T.</td>
+              <td class="td-mono td-muted"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="781219151d0b381d00191508141d561b1715">[email&#160;protected]</a></td>
+              <td class="td-muted">London, UK</td>
+              <td><span class="pill pill-user">User</span></td>
+              <td><span class="pill pill-active">Active</span></td>
+              <td class="td-muted">Feb 2025</td>
+              <td><div class="action-row"><button class="act-btn" onclick="notify('Viewing user')">View</button><button class="act-btn danger" onclick="notify('User banned')">Ban</button></div></td>
+            </tr>
+            <tr>
+              <td class="td-bold">Priya K.</td>
+              <td class="td-mono td-muted"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7707051e0e1637120f161a071b125914181a">[email&#160;protected]</a></td>
+              <td class="td-muted">Delhi, IN</td>
+              <td><span class="pill pill-user">User</span></td>
+              <td><span class="pill pill-pending">Inactive</span></td>
+              <td class="td-muted">Jan 2025</td>
+              <td><div class="action-row"><button class="act-btn" onclick="notify('Viewing user')">View</button><button class="act-btn danger" onclick="notify('User banned')">Ban</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── MANAGE ADMINS (Super Admin Only) ─── -->
+    <div class="section superadmin-section" id="sec-admins">
+
+      <!-- Stats row -->
+      <div style="display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap;">
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 22px; min-width:140px;">
+          <div style="font-size:22px; font-weight:700; font-family:'Playfair Display',serif; color:var(--super);" id="stat-total-admins">1</div>
+          <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:2px;">Total Admins</div>
+        </div>
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 22px; min-width:140px;">
+          <div style="font-size:22px; font-weight:700; font-family:'Playfair Display',serif; color:var(--amber);" id="stat-active-admins">1</div>
+          <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:2px;">Active Admins</div>
+        </div>
+        <div style="background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 22px; min-width:140px;">
+          <div style="font-size:22px; font-weight:700; font-family:'Playfair Display',serif; color:var(--danger);" id="stat-suspended-admins">0</div>
+          <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:2px;">Suspended</div>
+        </div>
+      </div>
+
+      <!-- Live admin table -->
+      <div class="panel-card" style="margin-bottom:20px;">
+        <div class="panel-header">
+          <h3>🛡️ Admin Accounts</h3>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div class="search-box" style="max-width:220px; min-width:0; padding:6px 12px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" placeholder="Search admins…" oninput="filterAdminsTable(this.value)" style="font-size:12.5px;">
+            </div>
+          </div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Password</th><th>Created</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="admins-tbody">
+            <!-- dynamically rendered -->
+          </tbody>
+        </table>
+        <div id="admins-empty" style="display:none; padding:28px; text-align:center; color:var(--muted); font-size:13px;">No additional admins yet. Create one below.</div>
+      </div>
+
+      <!-- ➕ Create Admin Form -->
+      <div class="panel-card" style="margin-bottom:20px;">
+        <div class="panel-header"><h3>➕ Create New Admin</h3></div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" class="form-control" id="new-admin-name" placeholder="e.g. John Smith">
+              <div style="font-size:11px; color:var(--danger); margin-top:4px; display:none;" id="err-name">Name is required.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" class="form-control" id="new-admin-email" placeholder="admin@example.com">
+              <div style="font-size:11px; color:var(--danger); margin-top:4px; display:none;" id="err-email">Valid email required.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password *</label>
+              <div style="position:relative;">
+                <input type="password" class="form-control" id="new-admin-pwd" placeholder="Min 8 characters" style="font-family:var(--mono); padding-right:44px;">
+                <button onclick="toggleNewPwd()" type="button" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;color:var(--muted);" id="pwd-eye">👁️</button>
+              </div>
+              <div style="font-size:11px; color:var(--danger); margin-top:4px; display:none;" id="err-pwd">Minimum 8 characters.</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role *</label>
+              <select class="form-control" id="new-admin-role">
+                <option value="admin">🛡️ Admin</option>
+                <option value="superadmin">👑 Super Admin</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Password strength meter -->
+          <div style="margin-top:12px; margin-bottom:16px;" id="pwd-strength-wrap">
+            <div style="font-size:11px; color:var(--muted); margin-bottom:5px;">Password strength: <span id="pwd-strength-label" style="font-weight:700;">—</span></div>
+            <div style="height:4px; background:var(--border); border-radius:4px; overflow:hidden;">
+              <div id="pwd-strength-bar" style="height:100%; width:0%; border-radius:4px; transition:width .3s, background .3s;"></div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <button class="topbar-btn btn-primary-sm" onclick="createAdmin()" style="padding:10px 22px;">✓ Create Admin</button>
+            <button class="topbar-btn btn-ghost-sm" onclick="clearAdminForm()">Clear</button>
+            <span style="font-size:12px; color:var(--muted);">Admin will be able to log in immediately.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="danger-zone">
+        <h4>⚠️ Danger Zone</h4>
+        <p>These actions are irreversible. Proceed with extreme caution.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="topbar-btn" style="background:rgba(224,92,92,.15); border:1px solid rgba(224,92,92,.35); color:var(--danger); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; border-radius:7px; padding:8px 16px;" onclick="revokeAllSessions()">Revoke All Admin Sessions</button>
+          <button class="topbar-btn" style="background:rgba(224,92,92,.15); border:1px solid rgba(224,92,92,.35); color:var(--danger); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; border-radius:7px; padding:8px 16px;" onclick="suspendAllAdmins()">Suspend All Admins</button>
+        </div>
+      </div>
+
+      <!-- Confirm Remove Modal -->
+      <div id="confirmModal" style="position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border-hi);border-radius:14px;padding:32px;width:400px;max-width:90vw;text-align:center;">
+          <div style="font-size:38px;margin-bottom:14px;">⚠️</div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:8px;color:var(--cream);">Remove Admin?</div>
+          <p style="font-size:13px;color:var(--muted);margin-bottom:6px;line-height:1.6;">You are about to permanently remove:</p>
+          <div style="background:var(--card);border-radius:8px;padding:10px 16px;margin-bottom:20px;font-family:var(--mono);font-size:13px;color:var(--danger);" id="confirm-target-email"></div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:22px;">This action cannot be undone. The admin will immediately lose all access.</p>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button onclick="closeConfirm()" style="padding:10px 22px;border:1px solid var(--border);background:transparent;border-radius:8px;color:var(--light);font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
+            <button onclick="confirmRemove()" style="padding:10px 22px;background:var(--danger);border:none;border-radius:8px;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Yes, Remove Admin</button>
+          </div>
+        </div>
+      </div>
+
+    <!-- ─── SETTINGS (Super Admin Only) ─── -->
+    <div class="section superadmin-section" id="sec-settings">
+      <div class="two-col">
+        <div class="panel-card">
+          <div class="panel-header"><h3>General Settings</h3></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Site Name</label><input type="text" class="form-control" value="Applianzo"></div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Site Tagline</label><input type="text" class="form-control" value="Kitchen Essentials, Reviewed"></div>
+            <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Contact Email</label><input type="email" class="form-control" value="hello@applianzo.com"></div>
+            <button class="topbar-btn btn-primary-sm" onclick="notify('✓ Settings saved')">Save Settings</button>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Brand Colours</h3></div>
+          <div class="panel-body">
+            <div class="toggle-row">
+              <div class="toggle-info"><h4>Primary / Accent Color</h4><p>Main brand colour (burnt orange)</p></div>
+              <div class="color-picker-row"><input type="color" value="#c4541a"><span style="font-size:12px;color:var(--muted);font-family:var(--mono)">#c4541a</span></div>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><h4>Background Dark</h4><p>Charcoal background tone</p></div>
+              <div class="color-picker-row"><input type="color" value="#1e1a16"><span style="font-size:12px;color:var(--muted);font-family:var(--mono)">#1e1a16</span></div>
+            </div>
+            <div style="margin-top:14px;">
+              <button class="topbar-btn btn-primary-sm" onclick="notify('✓ Brand colours saved')">Apply Colours</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>Feature Toggles</h3></div>
+          <div class="panel-body">
+            <div class="toggle-row">
+              <div class="toggle-info"><h4>User Registrations</h4><p>Allow new users to sign up</p></div>
+              <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><h4>User Reviews</h4><p>Allow users to submit reviews</p></div>
+              <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><h4>Review Moderation</h4><p>Require approval before publishing</p></div>
+              <label class="toggle"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-info"><h4>Maintenance Mode</h4><p>Show maintenance page to visitors</p></div>
+              <label class="toggle"><input type="checkbox"><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header"><h3>SEO Settings</h3></div>
+          <div class="panel-body">
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Meta Title</label><input type="text" class="form-control" value="Applianzo — Kitchen Essentials, Reviewed"></div>
+            <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Meta Description</label><textarea class="form-control" style="min-height:60px;">Independent kitchen appliance reviews and Amazon affiliate recommendations.</textarea></div>
+            <button class="topbar-btn btn-primary-sm" onclick="notify('✓ SEO settings saved')">Save SEO</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── AUDIT LOGS (Super Admin Only) ─── -->
+    <div class="section superadmin-section" id="sec-logs">
+      <div class="panel-card">
+        <div class="panel-header">
+          <h3>🔍 Audit Log</h3>
+          <button class="topbar-btn btn-ghost-sm" onclick="notify('Log exported as CSV')">Export CSV</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Timestamp</th><th>Admin</th><th>Action</th><th>Target</th><th>IP Address</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-mono td-muted">2025-03-22 14:32:01</td>
+              <td class="td-bold">Super Admin</td>
+              <td><span class="pill pill-admin">LOGIN</span></td>
+              <td class="td-muted">Admin Panel</td>
+              <td class="td-mono td-muted">103.26.xx.xx</td>
+            </tr>
+            <tr>
+              <td class="td-mono td-muted">2025-03-22 11:15:44</td>
+              <td class="td-bold">Admin</td>
+              <td><span class="pill pill-user">UPDATE</span></td>
+              <td class="td-muted">Product: Le Creuset — price changed</td>
+              <td class="td-mono td-muted">182.71.xx.xx</td>
+            </tr>
+            <tr>
+              <td class="td-mono td-muted">2025-03-21 18:02:33</td>
+              <td class="td-bold">Admin</td>
+              <td><span class="pill pill-pending">FLAG</span></td>
+              <td class="td-muted">Review #14 — flagged for moderation</td>
+              <td class="td-mono td-muted">182.71.xx.xx</td>
+            </tr>
+            <tr>
+              <td class="td-mono td-muted">2025-03-21 09:41:11</td>
+              <td class="td-bold">Super Admin</td>
+              <td><span class="pill pill-super">ROLE_CHANGE</span></td>
+              <td class="td-muted">User <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="215153485840614459404c514d440f424e4c">[email&#160;protected]</a> → Admin</td>
+              <td class="td-mono td-muted">103.26.xx.xx</td>
+            </tr>
+            <tr>
+              <td class="td-mono td-muted">2025-03-20 22:14:09</td>
+              <td class="td-bold">Admin</td>
+              <td><span class="pill pill-live">PUBLISH</span></td>
+              <td class="td-muted">Product: Ninja AF101 Air Fryer</td>
+              <td class="td-mono td-muted">182.71.xx.xx</td>
+            </tr>
+            <tr>
+              <td class="td-mono td-muted">2025-03-20 16:05:52</td>
+              <td class="td-bold">Admin</td>
+              <td><span class="pill pill-user">LOGIN</span></td>
+              <td class="td-muted">Admin Panel</td>
+              <td class="td-mono td-muted">182.71.xx.xx</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main-wrap -->
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ══ SUPER ADMIN ══
+  const SUPER_ADMIN = { email:'esraigroup@gmail.com', password:'Esrai@2025#Super', role:'superadmin', name:'Esrai Group', locked:true };
+
+  // ══ DATA LAYER ══
+  const db = {
+    get: k => { try { return JSON.parse(localStorage.getItem('apz_'+k)||'null'); } catch(e) { return null; } },
+    set: (k,v) => localStorage.setItem('apz_'+k, JSON.stringify(v)),
+    getArr: k => db.get(k) || [],
+    push: (k,v) => { const a=db.getArr(k); a.push(v); db.set(k,a); return v; },
+    update: (k,id,patch) => { const a=db.getArr(k); const i=a.findIndex(x=>x.id===id); if(i>-1){Object.assign(a[i],patch);db.set(k,a);return a[i];} return null; },
+    remove: (k,id) => { const a=db.getArr(k).filter(x=>x.id!==id); db.set(k,a); return a; },
+    nextId: k => 'id_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)
+  };
+
+  // Seed default categories if none exist
+  (function seedCategories(){
+    if(db.getArr('categories').length) return;
+    const defaults=[
+      {id:'cat_1',name:'Air Fryers',slug:'air-fryers',icon:'🌬️',desc:'Healthier frying with hot air',created:new Date().toISOString()},
+      {id:'cat_2',name:'Microwave Ovens',slug:'microwave-ovens',icon:'📡',desc:'Fast and convenient cooking',created:new Date().toISOString()},
+      {id:'cat_3',name:'Coffee Makers',slug:'coffee-makers',icon:'☕',desc:'Brew the perfect cup every time',created:new Date().toISOString()},
+      {id:'cat_4',name:'Grills',slug:'grills',icon:'🔥',desc:'Indoor and outdoor grilling',created:new Date().toISOString()},
+      {id:'cat_5',name:'Juicers',slug:'juicers',icon:'🍊',desc:'Fresh juices and smoothies',created:new Date().toISOString()},
+      {id:'cat_6',name:'Blenders',slug:'blenders',icon:'🫙',desc:'Blend anything smooth',created:new Date().toISOString()},
+      {id:'cat_7',name:'Mixers',slug:'mixers',icon:'🥣',desc:'Stand and hand mixers',created:new Date().toISOString()},
+      {id:'cat_8',name:'Cooktops',slug:'cooktops',icon:'🍳',desc:'Gas and electric cooktops',created:new Date().toISOString()},
+      {id:'cat_9',name:'Induction Cookers',slug:'induction-cookers',icon:'⚡',desc:'Efficient induction cooking',created:new Date().toISOString()},
+      {id:'cat_10',name:'Pots & Pans',slug:'pots-and-pans',icon:'🥘',desc:'Essential cookware sets',created:new Date().toISOString()},
+      {id:'cat_11',name:'Cutlery',slug:'cutlery',icon:'🔪',desc:'Knives, scissors and more',created:new Date().toISOString()}
+    ];
+    db.set('categories', defaults);
+  })();
+
+  // ══ AUTH ══
+  function getAdminList() { try { return JSON.parse(localStorage.getItem('applianzo_admins')||'[]'); } catch(e){return[];} }
+  function getAllAdmins() {
+    const map={}; map[SUPER_ADMIN.email]=SUPER_ADMIN;
+    getAdminList().forEach(a=>{map[a.email]=a;}); return map;
+  }
+  let currentRole=null, currentEmail=null, pendingRemoveEmail=null;
+  let pendingDeleteType=null, pendingDeleteId=null;
+
+  // ── Render hint email via JS (avoids email obfuscators) ──
+  (function() {
+    const el = document.getElementById('hint-email');
+    if (el) el.textContent = SUPER_ADMIN.email;
+  })();
+
+  function verifyAccess(){
+    const email=document.getElementById('gate-email').value.trim().toLowerCase();
+    const pwd=document.getElementById('gate-password').value;
+    const err=document.getElementById('gate-error');
+    const all=getAllAdmins(); const match=all[email];
+    if(match&&match.password===pwd&&match.status!=='suspended'){
+      currentRole=match.role; currentEmail=email;
+      err.classList.remove('show');
+      initPanel(email,match);
+      document.getElementById('accessGate').classList.add('hidden');
+    } else if(match&&match.status==='suspended'){
+      err.textContent='Your account has been suspended.'; err.classList.add('show');
+    } else {
+      err.textContent='Invalid credentials. Access denied.'; err.classList.add('show');
+      document.getElementById('gate-password').value='';
+    }
+  }
+  document.getElementById('gate-email').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('gate-password').focus(); });
+
+  function initPanel(email,admin){
+    document.getElementById('sidebar-name').textContent=admin.name;
+    document.getElementById('sidebar-email').textContent=email;
+    document.getElementById('sidebar-avatar').textContent=admin.name.charAt(0).toUpperCase();
+    const roleEl=document.getElementById('roleIndicator');
+    if(admin.role==='superadmin'){
+      roleEl.className='sidebar-role role-superadmin'; roleEl.innerHTML='&#128081; Super Admin';
+      document.body.classList.add('is-superadmin');
+    } else {
+      roleEl.className='sidebar-role role-admin'; roleEl.innerHTML='&#128737;&#65039; Admin';
+    }
+    localStorage.setItem('applianzo_admin_session',JSON.stringify({email,role:admin.role,name:admin.name}));
+    refreshAllTables();
+    loadContentFields();
+    notify('Welcome, '+admin.name+'!');
+  }
+
+  (function restoreSession(){
+    try{
+      const s=JSON.parse(localStorage.getItem('applianzo_admin_session')||'null');
+      if(s){ const all=getAllAdmins(); const match=all[s.email];
+        if(match&&match.status!=='suspended'){
+          // Always use live role (handles promote/demote since last login)
+          currentRole=match.role; currentEmail=s.email;
+          localStorage.setItem('applianzo_admin_session',JSON.stringify({email:s.email,role:match.role,name:match.name}));
+          initPanel(s.email,match);
+          document.getElementById('accessGate').classList.add('hidden');
+        } else {
+          localStorage.removeItem('applianzo_admin_session');
+        }
+      }
+    }catch(e){}
+  })();
+
+  // ══ SECTION NAV ══
+  const sectionTitles={dashboard:'Dashboard',analytics:'Analytics',products:'Products',categories:'Categories',reviews:'Reviews',content:'Site Content',users:'Users',admins:'Manage Admins',settings:'Site Settings',logs:'Audit Logs'};
+
+  function showSection(id){
+    const superOnly=['admins','settings','logs'];
+    if(superOnly.includes(id)&&currentRole!=='superadmin'){notify('⛔ Super Admin access required');return;}
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    const sec=document.getElementById('sec-'+id); if(sec) sec.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+    });
+    document.getElementById('topbar-title').textContent=sectionTitles[id]||id;
+    if(id==='categories') renderCategories();
+    if(id==='products'){ renderProducts(); populateCategorySelects(); }
+    if(id==='reviews'){ renderReviews(); populateProductSelect(); }
+    if(id==='admins') renderAdminsTable();
+    return false;
+  }
+
+  function refreshAllTables(){ renderProducts(); renderCategories(); renderReviews(); updateNavBadges(); }
+
+  function updateNavBadges(){
+    const p=db.getArr('products'); const c=db.getArr('categories'); const r=db.getArr('reviews');
+    const pb=document.getElementById('nav-badge-products'); if(pb) pb.textContent=p.length;
+    const cb=document.getElementById('nav-badge-categories'); if(cb) cb.textContent=c.length;
+    const rb=document.getElementById('nav-badge-reviews'); if(rb) rb.textContent=r.filter(x=>x.status==='pending').length||r.length;
+  }
+
+  // ══════════════════════════════════
+  //  CATEGORIES CRUD
+  // ══════════════════════════════════
+  function renderCategories(filter){
+    const list=db.getArr('categories');
+    const products=db.getArr('products');
+    const q=(filter||'').toLowerCase();
+    const filtered=list.filter(c=>!q||c.name.toLowerCase().includes(q)||c.slug.includes(q));
+    const tbody=document.getElementById('categories-tbody');
+    const empty=document.getElementById('categories-empty');
+    const cnt=document.getElementById('categories-count'); if(cnt) cnt.textContent='('+list.length+')';
+    if(!filtered.length){ if(tbody)tbody.innerHTML=''; if(empty)empty.style.display='block'; return; }
+    if(empty) empty.style.display='none';
+    const pCount=cat=>products.filter(p=>p.category===cat).length;
+    tbody.innerHTML=filtered.map(c=>{
+      const removeBtn=currentRole==='superadmin'?`<button class="act-btn danger" onclick="askDelete('category','${esc(c.id)}','${escAttr(c.name)}')">Remove</button>`:'<span style="font-size:11px;color:var(--muted)">View only</span>';
+      return `<tr>
+        <td style="font-size:20px;text-align:center;">${c.icon||'📦'}</td>
+        <td class="td-bold">${escHtml(c.name)}</td>
+        <td class="td-mono td-muted" style="font-size:12px;">${escHtml(c.slug)}</td>
+        <td style="text-align:center;"><span class="pill pill-user">${pCount(c.name)}</span></td>
+        <td><div class="action-row">
+          <button class="act-btn" onclick="editCategory('${esc(c.id)}')">Edit</button>
+          ${removeBtn}
+        </div></td>
+      </tr>`;
+    }).join('');
+    updateNavBadges();
+    populateCategorySelects();
+  }
+
+  function filterCategoriesTable(q){ renderCategories(q); }
+
+  function openCategoryForm(){ clearCategoryForm(); document.getElementById('categoryFormTitle').textContent='➕ Add Category'; document.getElementById('categoryFormCard').scrollIntoView({behavior:'smooth',block:'start'}); }
+
+  function editCategory(id){
+    const c=db.getArr('categories').find(x=>x.id===id); if(!c) return;
+    document.getElementById('cf-id').value=c.id;
+    document.getElementById('cf-name').value=c.name;
+    document.getElementById('cf-slug').value=c.slug;
+    document.getElementById('cf-icon').value=c.icon||'';
+    document.getElementById('cf-desc').value=c.desc||'';
+    document.getElementById('categoryFormTitle').textContent='✏️ Edit Category';
+    document.getElementById('categoryFormCard').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function autoCatSlug(){
+    const n=document.getElementById('cf-name').value;
+    document.getElementById('cf-slug').value=n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  }
+
+  function saveCategory(){
+    const id=document.getElementById('cf-id').value;
+    const name=document.getElementById('cf-name').value.trim();
+    const slug=document.getElementById('cf-slug').value.trim()||name.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    const icon=document.getElementById('cf-icon').value.trim();
+    const desc=document.getElementById('cf-desc').value.trim();
+    const err=document.getElementById('cf-name-err');
+    if(!name){ err.style.display='block'; return; } err.style.display='none';
+    if(id){
+      db.update('categories',id,{name,slug,icon,desc});
+      addAuditLog('UPDATE',currentEmail,'Category:'+name,'Updated category: '+name);
+      notify('✓ Category updated');
+    } else {
+      db.push('categories',{id:db.nextId('cat'),name,slug,icon,desc,created:new Date().toISOString()});
+      addAuditLog('CREATE',currentEmail,'Category:'+name,'Created category: '+name);
+      notify('✅ Category "'+name+'" created');
+    }
+    renderCategories(); clearCategoryForm();
+  }
+
+  function clearCategoryForm(){
+    document.getElementById('cf-id').value='';
+    ['cf-name','cf-slug','cf-icon','cf-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('categoryFormTitle').textContent='➕ Add Category';
+  }
+
+  function populateCategorySelects(){
+    const cats=db.getArr('categories');
+    const opts=['<option value="">— Select category —</option>',...cats.map(c=>`<option value="${escHtml(c.name)}">${escHtml(c.name)}</option>`)].join('');
+    ['pf-category','products-filter-cat'].forEach(id=>{
+      const el=document.getElementById(id); if(!el) return;
+      const prev=el.value;
+      el.innerHTML=id==='products-filter-cat'?'<option value="">All Categories</option>'+cats.map(c=>`<option value="${escHtml(c.name)}">${escHtml(c.name)}</option>`).join(''):opts;
+      el.value=prev;
+    });
+  }
+
+  // ══════════════════════════════════
+  //  PRODUCTS CRUD
+  // ══════════════════════════════════
+  function renderProducts(filter, catFilter, statusFilter){
+    const list=db.getArr('products');
+    const q=(filter||'').toLowerCase();
+    const cat=catFilter||document.getElementById('products-filter-cat')?.value||'';
+    const st=statusFilter||document.getElementById('products-filter-status')?.value||'';
+    const filtered=list.filter(p=>{
+      const mq=!q||p.name.toLowerCase().includes(q)||p.brand.toLowerCase().includes(q)||p.category.toLowerCase().includes(q);
+      const mc=!cat||p.category===cat;
+      const ms=!st||p.status===st;
+      return mq&&mc&&ms;
+    });
+    const tbody=document.getElementById('products-tbody');
+    const empty=document.getElementById('products-empty');
+    const cnt=document.getElementById('products-count'); if(cnt) cnt.textContent='('+list.length+' total)';
+    if(!filtered.length){ if(tbody)tbody.innerHTML=''; if(empty)empty.style.display='block'; }
+    else {
+      if(empty) empty.style.display='none';
+      tbody.innerHTML=filtered.map(p=>{
+        const thumb=p.image?`<img class="img-thumb" src="${escHtml(p.image)}" alt="" onerror="this.style.display='none'">`:
+          `<div style="width:36px;height:36px;background:var(--panel);border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;">${p.categoryIcon||'📦'}</div>`;
+        const affShort=p.affiliate?'<a href="'+escHtml(p.affiliate)+'" target="_blank" style="color:var(--info);font-size:11px;font-family:var(--mono);">amazon ↗</a>':'<span style="color:var(--muted);font-size:11px;">—</span>';
+        const statusPill=p.status==='live'?'<span class="pill pill-live">Live</span>':'<span class="pill pill-draft">Draft</span>';
+        const stars='★'.repeat(Math.round(parseFloat(p.rating)||0));
+        const removeBtn=currentRole==='superadmin'?`<button class="act-btn danger" onclick="askDelete('product','${esc(p.id)}','${escAttr(p.name)}')">Remove</button>`:'';
+        const toggleBtn=p.status==='live'
+          ?`<button class="act-btn" onclick="toggleProductStatus('${esc(p.id)}')">Unpublish</button>`
+          :`<button class="act-btn success" onclick="toggleProductStatus('${esc(p.id)}')">Publish</button>`;
+        return `<tr>
+          <td>${thumb}</td>
+          <td class="td-bold" style="max-width:160px;">${escHtml(p.name)}</td>
+          <td class="td-muted">${escHtml(p.brand)}</td>
+          <td><span class="pill pill-user" style="font-size:10.5px;">${escHtml(p.category)}</span></td>
+          <td class="td-mono">$${escHtml(p.price)}</td>
+          <td class="td-muted td-mono" style="font-size:11.5px;">${p.was?'$'+escHtml(p.was):'—'}</td>
+          <td style="color:var(--amber);letter-spacing:1px;" title="${p.rating}">${stars} <span style="font-size:11px;color:var(--muted);">${p.rating}</span></td>
+          <td>${affShort}</td>
+          <td>${statusPill}</td>
+          <td><div class="action-row">
+            <button class="act-btn" onclick="editProduct('${esc(p.id)}')">Edit</button>
+            ${toggleBtn}
+            ${removeBtn}
+          </div></td>
+        </tr>`;
+      }).join('');
+    }
+    updateNavBadges();
+  }
+
+  function filterProductsTable(q){
+    const cat=document.getElementById('products-filter-cat')?.value||'';
+    const st=document.getElementById('products-filter-status')?.value||'';
+    renderProducts(q,cat,st);
+  }
+
+  function openProductForm(){
+    clearProductForm();
+    document.getElementById('productFormTitle').textContent='➕ Add New Product';
+    document.getElementById('productFormCard').style.display='block';
+    populateCategorySelects();
+    document.getElementById('productFormCard').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function editProduct(id){
+    const p=db.getArr('products').find(x=>x.id===id); if(!p) return;
+    document.getElementById('pf-id').value=p.id;
+    document.getElementById('pf-name').value=p.name||'';
+    document.getElementById('pf-brand').value=p.brand||'';
+    document.getElementById('pf-price').value=p.price||'';
+    document.getElementById('pf-was').value=p.was||'';
+    document.getElementById('pf-affiliate').value=p.affiliate||'';
+    document.getElementById('pf-desc').value=p.desc||'';
+    document.getElementById('pf-pro1').value=p.pros?.[0]||'';
+    document.getElementById('pf-pro2').value=p.pros?.[1]||'';
+    document.getElementById('pf-pro3').value=p.pros?.[2]||'';
+    document.getElementById('pf-reviews').value=p.reviewCount||'';
+    document.getElementById('pf-status').value=p.status||'draft';
+    document.getElementById('pf-badge').value=p.badge||'';
+    const rng=document.getElementById('pf-rating-range'); rng.value=p.rating||4.5;
+    document.getElementById('pf-rating-val').textContent=parseFloat(p.rating||4.5).toFixed(1);
+    populateCategorySelects();
+    document.getElementById('pf-category').value=p.category||'';
+    if(p.image){ document.getElementById('pf-image').value=p.image; showProductImagePreview(p.image); }
+    else clearProductImage();
+    document.getElementById('productFormTitle').textContent='✏️ Edit: '+p.name;
+    document.getElementById('productFormCard').style.display='block';
+    document.getElementById('productFormCard').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function saveProduct(forceStatus){
+    const id=document.getElementById('pf-id').value;
+    const name=document.getElementById('pf-name').value.trim();
+    const brand=document.getElementById('pf-brand').value.trim();
+    const category=document.getElementById('pf-category').value;
+    const price=document.getElementById('pf-price').value.trim();
+    const affiliate=document.getElementById('pf-affiliate').value.trim();
+    let ok=true;
+    const req=[[name,'pf-name-err'],[brand,'pf-brand-err'],[category,'pf-cat-err'],[price,'pf-price-err']];
+    req.forEach(([v,eid])=>{ const el=document.getElementById(eid); if(el) el.classList.toggle('show',!v); if(!v)ok=false; });
+    const affEl=document.getElementById('pf-aff-err');
+    const affOk=!affiliate||/^https?:\/\/.+/.test(affiliate);
+    if(affEl) affEl.classList.toggle('show',!affOk); if(!affOk)ok=false;
+    if(!ok)return;
+    const cats=db.getArr('categories'); const catObj=cats.find(c=>c.name===category);
+    const data={
+      name,brand,category,categoryIcon:catObj?.icon||'📦',
+      price,was:document.getElementById('pf-was').value.trim(),
+      affiliate,
+      desc:document.getElementById('pf-desc').value.trim(),
+      pros:[document.getElementById('pf-pro1').value.trim(),document.getElementById('pf-pro2').value.trim(),document.getElementById('pf-pro3').value.trim()].filter(Boolean),
+      rating:parseFloat(document.getElementById('pf-rating-range').value).toFixed(1),
+      reviewCount:document.getElementById('pf-reviews').value.trim(),
+      badge:document.getElementById('pf-badge').value,
+      image:document.getElementById('pf-image').value.trim(),
+      status:forceStatus||document.getElementById('pf-status').value,
+      updated:new Date().toISOString()
+    };
+    if(id){ db.update('products',id,data); addAuditLog('UPDATE',currentEmail,'Product:'+name,'Updated product: '+name); notify('✓ Product updated'); }
+    else { data.id=db.nextId('prd'); data.created=new Date().toISOString(); db.push('products',data); addAuditLog('CREATE',currentEmail,'Product:'+name,'Created product: '+name); notify('✅ Product "'+name+'" saved'); }
+    closeProductForm(); renderProducts();
+  }
+
+  function toggleProductStatus(id){
+    const p=db.getArr('products').find(x=>x.id===id); if(!p) return;
+    const ns=p.status==='live'?'draft':'live';
+    db.update('products',id,{status:ns});
+    addAuditLog(ns==='live'?'PUBLISH':'UNPUBLISH',currentEmail,'Product:'+p.name,(ns==='live'?'Published':'Unpublished')+': '+p.name);
+    renderProducts(); notify(ns==='live'?'🚀 Product published':'📝 Product set to draft');
+  }
+
+  function closeProductForm(){ document.getElementById('productFormCard').style.display='none'; clearProductForm(); }
+
+  function clearProductForm(){
+    document.getElementById('pf-id').value='';
+    ['pf-name','pf-brand','pf-price','pf-was','pf-affiliate','pf-desc','pf-pro1','pf-pro2','pf-pro3','pf-reviews','pf-image'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const rng=document.getElementById('pf-rating-range'); if(rng){rng.value=4.5;} const rv=document.getElementById('pf-rating-val'); if(rv)rv.textContent='4.5';
+    const st=document.getElementById('pf-status'); if(st)st.value='draft';
+    const bg=document.getElementById('pf-badge'); if(bg)bg.value='';
+    clearProductImage();
+    document.querySelectorAll('.field-err').forEach(e=>e.classList.remove('show'));
+  }
+
+  function previewProductImage(){ const url=document.getElementById('pf-image').value.trim(); if(url) showProductImagePreview(url); else clearProductImage(); }
+  function handleProductImageUpload(input){
+    if(!input.files||!input.files[0]) return;
+    const r=new FileReader(); r.onload=e=>{ document.getElementById('pf-image').value=e.target.result; showProductImagePreview(e.target.result); }; r.readAsDataURL(input.files[0]);
+  }
+  function showProductImagePreview(src){
+    document.getElementById('pf-img-thumb').src=src;
+    document.getElementById('pf-image-preview').style.display='block';
+  }
+  function clearProductImage(){
+    document.getElementById('pf-image').value='';
+    document.getElementById('pf-image-preview').style.display='none';
+    document.getElementById('pf-img-thumb').src='';
+  }
+  function validateAffiliateLink(){
+    const url=document.getElementById('pf-affiliate').value.trim();
+    if(url) window.open(url,'_blank');
+    else notify('Enter a URL first');
+  }
+
+  // ══════════════════════════════════
+  //  REVIEWS CRUD
+  // ══════════════════════════════════
+  function renderReviews(filter){
+    const list=db.getArr('reviews');
+    const q=(filter||'').toLowerCase();
+    const sf=document.getElementById('reviews-filter-status')?.value||'';
+    const filtered=list.filter(r=>{
+      const mq=!q||r.name.toLowerCase().includes(q)||r.product.toLowerCase().includes(q)||r.title.toLowerCase().includes(q);
+      const ms=!sf||r.status===sf;
+      return mq&&ms;
+    });
+    const tbody=document.getElementById('reviews-tbody');
+    const empty=document.getElementById('reviews-empty');
+    const cnt=document.getElementById('reviews-count'); if(cnt) cnt.textContent='('+list.length+')';
+    if(!filtered.length){ if(tbody)tbody.innerHTML=''; if(empty)empty.style.display='block'; return; }
+    if(empty) empty.style.display='none';
+    tbody.innerHTML=filtered.map(r=>{
+      const stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
+      const statusPill=r.status==='approved'?'<span class="pill pill-live">Approved</span>':r.status==='rejected'?'<span class="pill pill-banned">Rejected</span>':'<span class="pill pill-pending">Pending</span>';
+      const featureBtn=r.featured?`<button class="act-btn" onclick="toggleFeatureReview('${esc(r.id)}')">Unfeature</button>`:`<button class="act-btn" onclick="toggleFeatureReview('${esc(r.id)}')">Feature</button>`;
+      const approveBtn=r.status!=='approved'?`<button class="act-btn success" onclick="setReviewStatus('${esc(r.id)}','approved')">Approve</button>`:'';
+      const rejectBtn=r.status!=='rejected'?`<button class="act-btn danger" onclick="setReviewStatus('${esc(r.id)}','rejected')">Reject</button>`:'';
+      const removeBtn=currentRole==='superadmin'?`<button class="act-btn danger" onclick="askDelete('review','${esc(r.id)}','${escAttr(r.name)}')">Remove</button>`:'';
+      return `<tr>
+        <td class="td-bold">${escHtml(r.name)}${r.verified?' <span style="font-size:10px;color:var(--success);">✓</span>':''}</td>
+        <td class="td-muted">${escHtml(r.product)}</td>
+        <td style="color:var(--amber);letter-spacing:1px;font-size:13px;">${stars}</td>
+        <td class="td-muted" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(r.title)}">${escHtml(r.title)}</td>
+        <td class="td-muted" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(r.body)}">${escHtml(r.body)}</td>
+        <td>${statusPill}${r.featured?' <span style="font-size:10px;color:var(--amber);">📌</span>':''}</td>
+        <td><div class="action-row">
+          <button class="act-btn" onclick="editReview('${esc(r.id)}')">Edit</button>
+          ${approveBtn}${rejectBtn}${featureBtn}${removeBtn}
+        </div></td>
+      </tr>`;
+    }).join('');
+    updateNavBadges();
+  }
+
+  function filterReviewsTable(q){ renderReviews(q); }
+
+  function updateReviewStars(val){
+    const n=parseInt(val); const el=document.getElementById('rf-stars-display');
+    if(el) el.textContent='★'.repeat(n)+'☆'.repeat(5-n);
+  }
+
+  function populateProductSelect(){
+    const products=db.getArr('products');
+    const sel=document.getElementById('rf-product'); if(!sel) return;
+    const prev=sel.value;
+    sel.innerHTML='<option value="">— Select product —</option>'+products.map(p=>`<option value="${escHtml(p.name)}">${escHtml(p.name)}</option>`).join('');
+    sel.value=prev;
+  }
+
+  function openReviewForm(){ clearReviewForm(); document.getElementById('reviewFormTitle').textContent='➕ Add Review'; document.getElementById('reviewFormCard').style.display='block'; populateProductSelect(); document.getElementById('reviewFormCard').scrollIntoView({behavior:'smooth',block:'start'}); }
+
+  function editReview(id){
+    const r=db.getArr('reviews').find(x=>x.id===id); if(!r) return;
+    document.getElementById('rf-id').value=r.id;
+    document.getElementById('rf-name').value=r.name||'';
+    populateProductSelect(); document.getElementById('rf-product').value=r.product||'';
+    document.getElementById('rf-rating-range').value=r.rating||5; updateReviewStars(r.rating||5);
+    document.getElementById('rf-title').value=r.title||'';
+    document.getElementById('rf-body').value=r.body||'';
+    document.getElementById('rf-status').value=r.status||'approved';
+    document.getElementById('rf-verified').checked=!!r.verified;
+    document.getElementById('rf-featured').checked=!!r.featured;
+    document.getElementById('reviewFormTitle').textContent='✏️ Edit Review';
+    document.getElementById('reviewFormCard').style.display='block';
+    document.getElementById('reviewFormCard').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function saveReview(){
+    const id=document.getElementById('rf-id').value;
+    const name=document.getElementById('rf-name').value.trim();
+    const product=document.getElementById('rf-product').value;
+    const title=document.getElementById('rf-title').value.trim();
+    const body=document.getElementById('rf-body').value.trim();
+    let ok=true;
+    [[name,'rf-name-err'],[product,'rf-prod-err'],[title,'rf-title-err'],[body,'rf-body-err']].forEach(([v,eid])=>{
+      const el=document.getElementById(eid); if(el)el.classList.toggle('show',!v); if(!v)ok=false;
+    });
+    if(!ok) return;
+    const data={name,product,rating:parseInt(document.getElementById('rf-rating-range').value),title,body,status:document.getElementById('rf-status').value,verified:document.getElementById('rf-verified').checked,featured:document.getElementById('rf-featured').checked,updated:new Date().toISOString()};
+    if(id){ db.update('reviews',id,data); addAuditLog('UPDATE',currentEmail,'Review:'+name,'Updated review by: '+name); notify('✓ Review updated'); }
+    else { data.id=db.nextId('rev'); data.created=new Date().toISOString(); db.push('reviews',data); addAuditLog('CREATE',currentEmail,'Review:'+name,'Created review by: '+name); notify('✅ Review saved'); }
+    closeReviewForm(); renderReviews();
+  }
+
+  function setReviewStatus(id,status){
+    const r=db.getArr('reviews').find(x=>x.id===id); if(!r) return;
+    db.update('reviews',id,{status}); addAuditLog(status.toUpperCase(),currentEmail,'Review:'+r.name,status+' review by: '+r.name);
+    renderReviews(); notify('Review '+status);
+  }
+  function toggleFeatureReview(id){
+    const r=db.getArr('reviews').find(x=>x.id===id); if(!r) return;
+    db.update('reviews',id,{featured:!r.featured}); renderReviews(); notify(r.featured?'Review unfeatured':'📌 Review featured on homepage');
+  }
+  function closeReviewForm(){ document.getElementById('reviewFormCard').style.display='none'; clearReviewForm(); }
+  function clearReviewForm(){
+    document.getElementById('rf-id').value='';
+    ['rf-name','rf-title','rf-body'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const p=document.getElementById('rf-product');if(p)p.value='';
+    const rng=document.getElementById('rf-rating-range');if(rng)rng.value=5; updateReviewStars(5);
+    const st=document.getElementById('rf-status');if(st)st.value='approved';
+    const v=document.getElementById('rf-verified');if(v)v.checked=true;
+    const f=document.getElementById('rf-featured');if(f)f.checked=false;
+    document.querySelectorAll('.field-err').forEach(e=>e.classList.remove('show'));
+  }
+
+  // ══════════════════════════════════
+  //  CONTENT MANAGEMENT
+  // ══════════════════════════════════
+  const contentDefaults={
+    headline:'The Kitchen Gear Worth Owning', subtext:"We test every appliance so you don't have to. Honest reviews, real comparisons, and the best prices on Amazon.",
+    cta:'Browse Top Picks →', badge:"✨ Editor's Picks 2025",
+    announcement:'🔥 Amazon Prime Deal: Up to 40% off KitchenAid appliances this week only →',
+    annLink:'https://amazon.com', annVisible:true,
+    affiliateTag:'', store:'amazon.in', globalLink:'',
+    promoEyebrow:'🔥 Limited Time Offer', promoTitle:'Upgrade Your Kitchen With Amazon Prime',
+    promoSub:'Every product we review is linked directly to Amazon.',
+    promoBtn:'🛒 Shop Our Picks on Amazon',
+    disclosure:'Applianzo participates in the Amazon Services LLC Associates Program. We earn a commission on qualifying purchases at no extra cost to you.',
+    stat1num:'200+', stat1lbl:'Products Tested', stat2num:'12K+', stat2lbl:'Happy Readers', stat3num:'4.8★', stat3lbl:'Avg. Rating'
+  };
+
+  function loadContentFields(){
+    const saved=db.get('site_content')||{};
+    const c={...contentDefaults,...saved};
+    const set=(id,val)=>{const el=document.getElementById(id); if(el){if(el.type==='checkbox')el.checked=val; else el.value=val;}};
+    set('sc-headline',c.headline); set('sc-subtext',c.subtext); set('sc-cta',c.cta); set('sc-badge',c.badge);
+    set('sc-announcement',c.announcement); set('sc-ann-link',c.annLink); set('sc-ann-visible',c.annVisible);
+    set('sc-tag',c.affiliateTag); set('sc-store',c.store); set('sc-global-link',c.globalLink||'');
+    set('sc-promo-eyebrow',c.promoEyebrow); set('sc-promo-title',c.promoTitle); set('sc-promo-sub',c.promoSub); set('sc-promo-btn',c.promoBtn);
+    set('sc-disclosure',c.disclosure);
+    set('sc-stat1-num',c.stat1num); set('sc-stat1-lbl',c.stat1lbl); set('sc-stat2-num',c.stat2num); set('sc-stat2-lbl',c.stat2lbl); set('sc-stat3-num',c.stat3num); set('sc-stat3-lbl',c.stat3lbl);
+  }
+
+  function saveContent(section){
+    const saved=db.get('site_content')||{};
+    const get=id=>{const el=document.getElementById(id); return el?(el.type==='checkbox'?el.checked:el.value):null;};
+    if(section==='hero'||section==='all') Object.assign(saved,{headline:get('sc-headline'),subtext:get('sc-subtext'),cta:get('sc-cta'),badge:get('sc-badge')});
+    if(section==='announcement'||section==='all') Object.assign(saved,{announcement:get('sc-announcement'),annLink:get('sc-ann-link'),annVisible:get('sc-ann-visible')});
+    if(section==='affiliate'||section==='all') Object.assign(saved,{affiliateTag:get('sc-tag'),store:get('sc-store'),globalLink:get('sc-global-link')});
+    if(section==='promo'||section==='all') Object.assign(saved,{promoEyebrow:get('sc-promo-eyebrow'),promoTitle:get('sc-promo-title'),promoSub:get('sc-promo-sub'),promoBtn:get('sc-promo-btn')});
+    if(section==='disclosure'||section==='all') Object.assign(saved,{disclosure:get('sc-disclosure')});
+    if(section==='stats'||section==='all') Object.assign(saved,{stat1num:get('sc-stat1-num'),stat1lbl:get('sc-stat1-lbl'),stat2num:get('sc-stat2-num'),stat2lbl:get('sc-stat2-lbl'),stat3num:get('sc-stat3-num'),stat3lbl:get('sc-stat3-lbl')});
+    db.set('site_content',saved);
+    addAuditLog('UPDATE',currentEmail,'SiteContent:'+section,'Updated '+section+' content');
+    notify('✓ '+section.charAt(0).toUpperCase()+section.slice(1)+' content saved');
+  }
+
+  function resetContent(section){
+    if(currentRole!=='superadmin'){notify('⛔ Super Admin only');return;}
+    const saved=db.get('site_content')||{};
+    if(section==='hero'||section==='all'){['headline','subtext','cta','badge'].forEach(k=>{saved[k]=contentDefaults[k];})}
+    if(section==='announcement'||section==='all'){['announcement','annLink','annVisible'].forEach(k=>{saved[k]=contentDefaults[k];})}
+    if(section==='affiliate'||section==='all'){['affiliateTag','store','globalLink'].forEach(k=>{saved[k]=contentDefaults[k];})}
+    if(section==='all') Object.assign(saved,contentDefaults);
+    db.set('site_content',saved); loadContentFields();
+    addAuditLog('RESET',currentEmail,'SiteContent','Reset '+section+' content to defaults');
+    notify('🔄 '+section+' content reset to defaults');
+  }
+
+  // ══════════════════════════════════
+  //  UNIVERSAL DELETE (Super Admin)
+  // ══════════════════════════════════
+  function askDelete(type,id,name){
+    if(currentRole!=='superadmin'){notify('⛔ Only Super Admin can remove items');return;}
+    pendingDeleteType=type; pendingDeleteId=id;
+    document.getElementById('confirm-target-email').textContent=name+' ('+type+')';
+    document.getElementById('confirmModal').style.display='flex';
+  }
+  function closeConfirm(){document.getElementById('confirmModal').style.display='none'; pendingDeleteType=null; pendingDeleteId=null; pendingRemoveEmail=null;}
+  function confirmRemove(){
+    if(pendingDeleteType&&pendingDeleteId){
+      if(pendingDeleteType==='product'){db.remove('products',pendingDeleteId); addAuditLog('DELETE',currentEmail,'Product','Deleted product id:'+pendingDeleteId); notify('🗑️ Product deleted'); renderProducts();}
+      else if(pendingDeleteType==='review'){db.remove('reviews',pendingDeleteId); addAuditLog('DELETE',currentEmail,'Review','Deleted review id:'+pendingDeleteId); notify('🗑️ Review deleted'); renderReviews();}
+      else if(pendingDeleteType==='category'){db.remove('categories',pendingDeleteId); addAuditLog('DELETE',currentEmail,'Category','Deleted category id:'+pendingDeleteId); notify('🗑️ Category deleted'); renderCategories();}
+      closeConfirm(); return;
+    }
+    // Admin removal (existing logic)
+    if(pendingRemoveEmail){
+      const email=pendingRemoveEmail;
+      let list=getAdminList(); const removed=list.find(a=>a.email===email);
+      list=list.filter(a=>a.email!==email); saveAdminList(list);
+      addAuditLog('REMOVE',currentEmail,email,'Removed admin: '+(removed?.name||email));
+      closeConfirm(); renderAdminsTable(); notify('🗑️ Admin removed');
+      try{const s=JSON.parse(localStorage.getItem('applianzo_admin_session')||'null'); if(s&&s.email===email)localStorage.removeItem('applianzo_admin_session');}catch(e){}
+    }
+  }
+
+  // ══════════════════════════════════
+  //  ADMIN MANAGEMENT (existing)
+  // ══════════════════════════════════
+  function saveAdminList(list){localStorage.setItem('applianzo_admins',JSON.stringify(list));}
+  function renderAdminsTable(filter){
+    const tbody=document.getElementById('admins-tbody'); if(!tbody)return;
+    const empty=document.getElementById('admins-empty');
+    const list=getAdminList(); const q=(filter||'').toLowerCase();
+    const filtered=list.filter(a=>!q||a.name.toLowerCase().includes(q)||a.email.toLowerCase().includes(q));
+    document.getElementById('stat-total-admins').textContent=list.length;
+    document.getElementById('stat-active-admins').textContent=list.filter(a=>a.status!=='suspended').length;
+    document.getElementById('stat-suspended-admins').textContent=list.filter(a=>a.status==='suspended').length;
+    if(!filtered.length){tbody.innerHTML='';if(empty)empty.style.display='block';return;}
+    if(empty)empty.style.display='none';
+    tbody.innerHTML=filtered.map(a=>{
+      const roleLabel=a.role==='superadmin'?'<span class="pill pill-super">Super Admin</span>':'<span class="pill pill-admin">Admin</span>';
+      const statusLabel=a.status==='suspended'?'<span class="pill pill-banned">Suspended</span>':'<span class="pill pill-active">Active</span>';
+      const maskedPwd='\u2022'.repeat(Math.min(a.password.length,10));
+      const created=new Date(a.created).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+      const suspendBtn=a.status==='suspended'?`<button class="act-btn success" onclick="toggleSuspend('${escAttr(a.email)}')">Restore</button>`:`<button class="act-btn" onclick="toggleSuspend('${escAttr(a.email)}')">Suspend</button>`;
+      const promoteBtn=a.role==='admin'?`<button class="act-btn" onclick="promoteAdmin('${escAttr(a.email)}')">&uarr; Promote</button>`:`<button class="act-btn" onclick="demoteAdmin('${escAttr(a.email)}')">&darr; Demote</button>`;
+      return `<tr><td class="td-bold">${escHtml(a.name)}</td><td class="td-mono td-muted">${escHtml(a.email)}</td><td>${roleLabel}</td><td class="td-mono" style="font-size:12px;color:var(--muted);letter-spacing:.1em;">${maskedPwd}</td><td class="td-muted">${created}</td><td>${statusLabel}</td><td><div class="action-row">${promoteBtn}${suspendBtn}<button class="act-btn danger" onclick="askRemove('${escAttr(a.email)}','${escAttr(a.name)}')">Remove</button></div></td></tr>`;
+    }).join('');
+  }
+
+  function askRemove(email,name){pendingRemoveEmail=email; pendingDeleteType=null; pendingDeleteId=null; document.getElementById('confirm-target-email').textContent=name+' — '+email; document.getElementById('confirmModal').style.display='flex';}
+
+  function toggleSuspend(email){const list=getAdminList();const idx=list.findIndex(a=>a.email===email);if(idx===-1)return;list[idx].status=list[idx].status==='suspended'?'active':'suspended';saveAdminList(list);addAuditLog(list[idx].status==='suspended'?'SUSPEND':'RESTORE',currentEmail,email,list[idx].status+': '+list[idx].name);renderAdminsTable();notify(list[idx].status==='suspended'?'Admin suspended':'Admin restored');}
+  function promoteAdmin(email){const list=getAdminList();const a=list.find(x=>x.email===email);if(!a)return;a.role='superadmin';saveAdminList(list);addAuditLog('PROMOTE',currentEmail,email,'Promoted to Super Admin: '+a.name);renderAdminsTable();notify('Admin promoted to Super Admin');}
+  function demoteAdmin(email){const list=getAdminList();const a=list.find(x=>x.email===email);if(!a)return;a.role='admin';saveAdminList(list);addAuditLog('DEMOTE',currentEmail,email,'Demoted to Admin: '+a.name);renderAdminsTable();notify('Super Admin demoted to Admin');}
+
+  function createAdmin(){
+    const name=document.getElementById('new-admin-name').value.trim(); const email=document.getElementById('new-admin-email').value.trim().toLowerCase();
+    const pwd=document.getElementById('new-admin-pwd').value; const role=document.getElementById('new-admin-role').value;
+    let ok=true;
+    document.getElementById('err-name').style.display=name?'none':'block'; if(!name)ok=false;
+    const eok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); document.getElementById('err-email').style.display=eok?'none':'block'; if(!eok)ok=false;
+    document.getElementById('err-pwd').style.display=pwd.length>=8?'none':'block'; if(pwd.length<8)ok=false;
+    if(!ok)return;
+    const all=getAllAdmins(); if(all[email]){notify('Email already exists');return;}
+    const list=getAdminList(); list.push({name,email,password:pwd,role,status:'active',created:new Date().toISOString()});
+    saveAdminList(list); addAuditLog('CREATE',currentEmail,email,'Created '+role+': '+name);
+    renderAdminsTable(); clearAdminForm(); notify('Admin "'+name+'" created!');
+  }
+
+  function clearAdminForm(){['new-admin-name','new-admin-email','new-admin-pwd'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});const r=document.getElementById('new-admin-role');if(r)r.value='admin';['err-name','err-email','err-pwd'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});const bar=document.getElementById('pwd-strength-bar');if(bar)bar.style.width='0%';const lbl=document.getElementById('pwd-strength-label');if(lbl)lbl.textContent='—';}
+
+  function revokeAllSessions(){localStorage.removeItem('applianzo_admin_session');addAuditLog('REVOKE_ALL',currentEmail,'ALL','All sessions revoked');notify('All sessions revoked. Redirecting...');setTimeout(()=>window.location.reload(),2200);}
+  function suspendAllAdmins(){const list=getAdminList().map(a=>({...a,status:'suspended'}));saveAdminList(list);addAuditLog('SUSPEND_ALL',currentEmail,'ALL','All admins suspended');renderAdminsTable();notify('All admins suspended');}
+
+  // ══ PASSWORD STRENGTH ══
+  const pwdInput=document.getElementById('new-admin-pwd');
+  if(pwdInput){pwdInput.addEventListener('input',function(){const v=this.value;let s=0;if(v.length>=8)s++;if(v.length>=12)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;const map=[{l:'—',c:'transparent',w:'0%'},{l:'Weak',c:'#e05c5c',w:'25%'},{l:'Fair',c:'#e8891a',w:'50%'},{l:'Good',c:'#5ba4d4',w:'75%'},{l:'Strong',c:'#4caf72',w:'88%'},{l:'Excellent',c:'#4caf72',w:'100%'}];const m=map[s]||map[0];const bar=document.getElementById('pwd-strength-bar');const lbl=document.getElementById('pwd-strength-label');if(bar){bar.style.width=m.w;bar.style.background=m.c;}if(lbl){lbl.textContent=m.l;lbl.style.color=m.c;}});}
+
+  function toggleNewPwd(){const inp=document.getElementById('new-admin-pwd');const eye=document.getElementById('pwd-eye');if(!inp)return;inp.type=inp.type==='password'?'text':'password';if(eye)eye.textContent=inp.type==='password'?'\uD83D\uDC41\uFE0F':'\uD83D\uDE48';}
+
+  // ══ AUDIT LOG ══
+  function getAuditLog(){try{return JSON.parse(localStorage.getItem('applianzo_audit')||'[]');}catch(e){return[];}}
+  function addAuditLog(action,by,target,description){const log=getAuditLog();log.unshift({ts:new Date().toISOString(),action,by,target,description});if(log.length>200)log.splice(200);localStorage.setItem('applianzo_audit',JSON.stringify(log));refreshAuditLog();}
+  function refreshAuditLog(){const log=getAuditLog();const tbody=document.querySelector('#sec-logs .data-table tbody');if(!tbody)return;const pillMap={CREATE:'pill-super',DELETE:'pill-banned',REMOVE:'pill-banned',UPDATE:'pill-user',SUSPEND:'pill-pending',RESTORE:'pill-live',PROMOTE:'pill-super',DEMOTE:'pill-admin',PUBLISH:'pill-live',UNPUBLISH:'pill-draft',RESET:'pill-pending',REVOKE_ALL:'pill-banned',LOGIN:'pill-admin'};const rows=log.slice(0,50).map(e=>{const ts=new Date(e.ts).toLocaleString('en-GB');const pill=pillMap[e.action]||'pill-user';return`<tr><td class="td-mono td-muted">${ts}</td><td class="td-bold">${escHtml(e.by)}</td><td><span class="pill ${pill}">${escHtml(e.action)}</span></td><td class="td-muted">${escHtml(e.description)}</td><td class="td-mono td-muted">—</td></tr>`;}).join('');if(rows)tbody.innerHTML=rows;}
+
+  function filterAdminsTable(q){renderAdminsTable(q);}
+  function filterTable(input,tbodyId){const q=input.value.toLowerCase();document.querySelectorAll('#'+tbodyId+' tr').forEach(row=>{row.style.display=row.textContent.toLowerCase().includes(q)?'':'none';});}
+  function openProductModal(){openProductForm();}
+  function closeProductForm(){document.getElementById('productFormCard').style.display='none';clearProductForm();}
+
+  function signOut(){
+    localStorage.removeItem('applianzo_admin_session');
+    localStorage.removeItem('applianzo_user');
+    window.location.href='applianzo.html';
+  }
+
+  function escHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function escAttr(str){return String(str||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+  function esc(str){return String(str||'').replace(/'/g,"\\'");}
+
+  function notify(msg){const n=document.getElementById('notif');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
