@@ -548,13 +548,13 @@
 
 <header>
   <div class="header-inner">
-    <a href="applianzo.html" class="logo">
+    <a href="/applianzo.html" class="logo">
       <span class="logo-word">Appl<em>ianzo</em></span>
       <span class="logo-tag">Kitchen Reviews</span>
     </a>
     <div class="nav-right">
-      <a href="applianzo.html" class="nav-link">← Browse Products</a>
-      <a href="applianzo-admin.html" id="profile-admin-link" style="display:none; font-size:13px; font-weight:600; color:#b069e8; text-decoration:none; padding:7px 14px; border:1.5px solid rgba(176,105,232,0.35); border-radius:6px; background:rgba(176,105,232,0.07);">🛡️ Admin Panel</a>
+      <a href="/applianzo.html" class="nav-link">← Browse Products</a>
+      <a href="/applianzo-admin.html" id="profile-admin-link" style="display:none; font-size:13px; font-weight:600; color:#b069e8; text-decoration:none; padding:7px 14px; border:1.5px solid rgba(176,105,232,0.35); border-radius:6px; background:rgba(176,105,232,0.07);">🛡️ Admin Panel</a>
       <button class="signout-btn" onclick="signOut()">Sign Out</button>
     </div>
   </div>
@@ -782,7 +782,7 @@
       <div class="content-card">
         <div class="card-header">
           <h3>Saved Items</h3>
-          <a href="applianzo.html" style="font-size:13px; color:var(--burnt-orange); text-decoration:none; font-weight:600;">Browse more →</a>
+          <a href="/applianzo.html" style="font-size:13px; color:var(--burnt-orange); text-decoration:none; font-weight:600;">Browse more →</a>
         </div>
         <div class="card-body">
           <div class="wishlist-grid">
@@ -990,7 +990,7 @@
   function signOut() {
     localStorage.removeItem('applianzo_user');
     localStorage.removeItem('applianzo_admin_session');
-    window.location.href = 'applianzo-login.html';
+    window.location.href = '/applianzo-login.html';
   }
 
   // ── NOTIFY ──
@@ -1006,7 +1006,7 @@
     const u = localStorage.getItem('applianzo_user');
     const a = localStorage.getItem('applianzo_admin_session');
     if (!u && !a) {
-      window.location.replace('applianzo-login.html');
+      window.location.replace('/applianzo-login.html');
     }
   })();
 

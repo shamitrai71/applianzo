@@ -473,11 +473,11 @@
 <div class="bg-orb bg-orb-2"></div>
 
 <header>
-  <a href="applianzo.html" class="logo">
+  <a href="/applianzo.html" class="logo">
     <span class="logo-word">Appl<em>ianzo</em></span>
     <span class="logo-tag">Kitchen Reviews</span>
   </a>
-  <a href="applianzo.html" class="back-link">← Back to Site</a>
+  <a href="/applianzo.html" class="back-link">← Back to Site</a>
 </header>
 
 <main>
@@ -629,7 +629,7 @@
 <footer>
   <span>© 2025 Applianzo · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Affiliate Disclosure</a></span>
   <div id="admin-panel-hint" style="display:none; justify-content:center; align-items:center; gap:8px; margin-top:10px;">
-    <a href="applianzo-admin.html" style="font-size:12px; color:#b069e8; text-decoration:none; font-weight:600; padding:5px 14px; border:1px solid rgba(176,105,232,0.3); border-radius:6px; background:rgba(176,105,232,0.08);">🛡️ Go to Admin Panel →</a>
+    <a href="/applianzo-admin.html" style="font-size:12px; color:#b069e8; text-decoration:none; font-weight:600; padding:5px 14px; border:1px solid rgba(176,105,232,0.3); border-radius:6px; background:rgba(176,105,232,0.08);">🛡️ Go to Admin Panel →</a>
   </div>
 </footer>
 
@@ -700,7 +700,7 @@
 
     // ── Regular user login ──
     localStorage.setItem('applianzo_user', JSON.stringify({ email, name: email.split('@')[0] }));
-    window.location.href = 'applianzo-profile.html';
+    window.location.href = '/applianzo-profile.html';
   }
 
   function showAdminSuccess(name, role) {
@@ -712,12 +712,12 @@
       <h3>Welcome, ${escHtml(name)}!</h3>
       <p>You're signed in as <strong style="color:${role==='superadmin'?'#b069e8':'#e8891a'}">${role === 'superadmin' ? 'Super Admin' : 'Admin'}</strong>.<br>
       Redirecting to the admin panel…</p>
-      <a href="applianzo-admin.html" class="go-profile-btn" style="background:${role==='superadmin'?'#7c3aed':'#c4541a'};">
+      <a href="/applianzo-admin.html" class="go-profile-btn" style="background:${role==='superadmin'?'#7c3aed':'#c4541a'};">
         Open Admin Panel →
       </a>
     `;
     ss.style.display = 'block';
-    setTimeout(() => { window.location.href = 'applianzo-admin.html'; }, 2000);
+    setTimeout(() => { window.location.href = '/applianzo-admin.html'; }, 2000);
   }
 
   function escHtml(str) {
@@ -768,7 +768,7 @@
         <div class="success-icon">🎉</div>
         <h3>Welcome, ${escHtml(fname)}!</h3>
         <p>Your account has been created.<br>Set up your profile to get personalised picks and kitchen tips.</p>
-        <a href="applianzo-profile.html" class="go-profile-btn">Set Up Your Profile →</a>
+        <a href="/applianzo-profile.html" class="go-profile-btn">Set Up Your Profile →</a>
       `;
       ss.style.display = 'block';
     }

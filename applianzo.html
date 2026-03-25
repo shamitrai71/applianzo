@@ -5,854 +5,218 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Applianzo — Kitchen Essentials, Reviewed</title>
 <script>
-  // Redirect to splash on first session visit.
-  // The splash page sets 'applianzo_splash_seen' itself when it exits,
-  // so this only fires when arriving at applianzo.html directly without passing through splash.
   if (!sessionStorage.getItem('applianzo_splash_seen')) {
-    window.location.replace('applianzo-splash.html');
+    window.location.replace('/applianzo-splash.html');
   }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream: #faf6f0;
-    --warm-white: #fff9f2;
-    --burnt-orange: #c4541a;
-    --rust: #a8411a;
-    --amber: #e8891a;
-    --charcoal: #1e1a16;
-    --slate: #3d3530;
-    --muted: #8a7a6e;
-    --light-muted: #c4b8ae;
-    --border: #e8dfd4;
-    --card-bg: #ffffff;
-    --amazon-orange: #ff9900;
-    --amazon-dark: #146eb4;
-    --star: #f5a623;
-    --badge-new: #2e7d32;
-    --badge-sale: #c62828;
-    --badge-top: #6a1b9a;
+    --cream:#faf6f0; --warm-white:#fff9f2; --burnt-orange:#c4541a; --rust:#a8411a;
+    --amber:#e8891a; --charcoal:#1e1a16; --slate:#3d3530; --muted:#8a7a6e;
+    --light-muted:#c4b8ae; --border:#e8dfd4; --card-bg:#ffffff;
+    --amazon-orange:#ff9900; --star:#f5a623;
+    --badge-new:#2e7d32; --badge-sale:#c62828; --badge-top:#6a1b9a;
   }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--charcoal);min-height:100vh;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* Superadmin contenteditable styles — only active when JS injects them */
+  [contenteditable="true"]{outline:none;border-radius:3px;transition:background .2s,box-shadow .2s;}
+  [contenteditable="true"]:hover{background:rgba(196,84,26,.06);box-shadow:0 0 0 2px rgba(196,84,26,.18);}
+  [contenteditable="true"]:focus{background:rgba(196,84,26,.1);box-shadow:0 0 0 2px var(--burnt-orange);}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
-    color: var(--charcoal);
-    min-height: 100vh;
-  }
+  /* Edit toolbar — injected by JS for superadmin only, hidden from all other visitors */
+  .edit-toolbar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--charcoal);border-radius:12px;padding:12px 20px;display:flex;gap:14px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:999;flex-wrap:wrap;max-width:90vw;justify-content:center;}
+  .edit-toolbar span{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-right:4px;}
+  .tb-btn{background:rgba(255,255,255,.08);color:var(--cream);border:1px solid rgba(255,255,255,.12);padding:7px 14px;border-radius:6px;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .18s,border-color .18s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;}
+  .tb-btn:hover{background:rgba(255,255,255,.14);border-color:var(--amber);}
+  .tb-btn.danger:hover{background:rgba(196,84,26,.25);border-color:var(--burnt-orange);}
 
-  /* ─── EDITABLE HELPER ─── */
-  [contenteditable="true"] {
-    outline: none;
-    border-radius: 3px;
-    transition: background 0.2s, box-shadow 0.2s;
-  }
-  [contenteditable="true"]:hover {
-    background: rgba(196, 84, 26, 0.06);
-    box-shadow: 0 0 0 2px rgba(196, 84, 26, 0.18);
-  }
-  [contenteditable="true"]:focus {
-    background: rgba(196, 84, 26, 0.1);
-    box-shadow: 0 0 0 2px var(--burnt-orange);
-  }
+  /* Modal — injected by JS for superadmin only */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--card-bg);border-radius:16px;padding:32px;width:460px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,.4);}
+  .modal h3{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:6px;color:var(--charcoal);}
+  .modal p{font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .modal label{font-size:13px;font-weight:600;color:var(--slate);display:block;margin-bottom:6px;}
+  .modal input[type="url"]{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:7px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--charcoal);margin-bottom:14px;outline:none;}
+  .modal input[type="url"]:focus{border-color:var(--burnt-orange);}
+  .modal input[type="file"]{margin-bottom:14px;font-size:13px;color:var(--muted);}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+  .modal-cancel{padding:9px 18px;border-radius:6px;border:1.5px solid var(--border);background:transparent;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--slate);}
+  .modal-cancel:hover{background:var(--cream);}
+  .modal-save{padding:9px 20px;border-radius:6px;background:var(--burnt-orange);color:#fff;border:none;font-size:13.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+  .modal-save:hover{background:var(--rust);}
 
-  /* ─── TOP BAR ─── */
-  .topbar {
-    background: var(--charcoal);
-    color: var(--light-muted);
-    font-size: 12px;
-    font-weight: 400;
-    text-align: center;
-    padding: 8px 20px;
-    letter-spacing: 0.04em;
-  }
-  .topbar span { color: var(--amber); font-weight: 600; }
+  /* Top bar */
+  .topbar{background:var(--charcoal);color:var(--light-muted);font-size:12px;text-align:center;padding:8px 20px;letter-spacing:.04em;}
+  .topbar span{color:var(--amber);font-weight:600;}
 
-  /* ─── HEADER ─── */
-  header {
-    background: var(--warm-white);
-    border-bottom: 2px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 0 40px;
-  }
-  .header-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 68px;
-  }
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-    text-decoration: none;
-  }
-  .logo-word {
-    font-family: 'Playfair Display', serif;
-    font-size: 28px;
-    font-weight: 900;
-    color: var(--charcoal);
-    letter-spacing: -0.5px;
-  }
-  .logo-word em {
-    color: var(--burnt-orange);
-    font-style: italic;
-  }
-  .logo-tag {
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    align-self: flex-end;
-    margin-bottom: 4px;
-  }
+  /* Header */
+  header{background:var(--warm-white);border-bottom:2px solid var(--border);position:sticky;top:0;z-index:100;padding:0 40px;}
+  .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:68px;}
+  .logo{display:flex;align-items:baseline;gap:4px;text-decoration:none;}
+  .logo-word{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--charcoal);letter-spacing:-.5px;}
+  .logo-word em{color:var(--burnt-orange);font-style:italic;}
+  .logo-tag{font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;align-self:flex-end;margin-bottom:4px;}
+  nav{display:flex;gap:28px;align-items:center;}
+  nav a{font-size:13.5px;font-weight:500;color:var(--slate);text-decoration:none;letter-spacing:.02em;transition:color .2s;padding:4px 0;border-bottom:2px solid transparent;}
+  nav a:hover,nav a.active{color:var(--burnt-orange);border-bottom-color:var(--burnt-orange);}
+  .cta-btn{background:var(--burnt-orange);color:#fff;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:.03em;transition:background .2s,transform .15s;border-bottom:none!important;}
+  .cta-btn:hover{background:var(--rust)!important;transform:translateY(-1px);}
 
-  nav { display: flex; gap: 28px; align-items: center; }
-  nav a {
-    font-size: 13.5px;
-    font-weight: 500;
-    color: var(--slate);
-    text-decoration: none;
-    letter-spacing: 0.02em;
-    transition: color 0.2s;
-    padding: 4px 0;
-    border-bottom: 2px solid transparent;
-  }
-  nav a:hover, nav a.active {
-    color: var(--burnt-orange);
-    border-bottom-color: var(--burnt-orange);
-  }
+  /* Hero */
+  .hero{background:var(--charcoal);padding:80px 40px;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:-60px;right:-60px;width:500px;height:500px;background:radial-gradient(circle,rgba(196,84,26,.18) 0%,transparent 70%);pointer-events:none;}
+  .hero::after{content:'';position:absolute;bottom:-80px;left:10%;width:400px;height:400px;background:radial-gradient(circle,rgba(232,137,26,.1) 0%,transparent 70%);pointer-events:none;}
+  .hero-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+  .hero-label{display:inline-block;background:rgba(196,84,26,.2);color:var(--amber);font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;padding:5px 12px;border-radius:20px;margin-bottom:20px;border:1px solid rgba(196,84,26,.3);}
+  .hero h1{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;color:var(--cream);line-height:1.12;margin-bottom:20px;}
+  .hero h1 em{color:var(--burnt-orange);font-style:italic;}
+  .hero-sub{font-size:16px;color:var(--light-muted);line-height:1.65;margin-bottom:32px;font-weight:300;}
+  .hero-actions{display:flex;gap:14px;flex-wrap:wrap;}
+  .btn-primary{background:var(--burnt-orange);color:#fff;padding:14px 28px;border-radius:8px;font-weight:600;font-size:15px;text-decoration:none;transition:background .2s,transform .15s;display:inline-flex;align-items:center;gap:8px;}
+  .btn-primary:hover{background:var(--rust);transform:translateY(-2px);}
+  .btn-ghost{border:1.5px solid rgba(255,255,255,.2);color:var(--cream);padding:13px 26px;border-radius:8px;font-weight:500;font-size:15px;text-decoration:none;transition:border-color .2s,background .2s;}
+  .btn-ghost:hover{border-color:var(--amber);background:rgba(232,137,26,.07);}
+  .hero-stats{display:flex;gap:32px;margin-top:40px;padding-top:32px;border-top:1px solid rgba(255,255,255,.08);}
+  .stat-num{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--amber);}
+  .stat-label{font-size:12px;color:var(--muted);font-weight:400;margin-top:2px;text-transform:uppercase;letter-spacing:.06em;}
+  .hero-feature-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;backdrop-filter:blur(10px);}
+  .hero-img-placeholder{height:280px;background:linear-gradient(135deg,#2a2420,#1e1a16);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;position:relative;}
+  .hero-img-placeholder img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;display:none;}
+  .hero-img-placeholder img.loaded{display:block;}
+  .img-placeholder-text{color:var(--muted);font-size:13px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .img-icon{font-size:36px;opacity:.4;}
+  .hero-card-body{padding:22px 24px;}
+  .hero-card-badge{display:inline-block;background:var(--burnt-orange);color:#fff;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:4px;margin-bottom:10px;}
+  .hero-card-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--cream);margin-bottom:8px;line-height:1.3;}
+  .hero-card-price{font-size:22px;font-weight:700;color:var(--amber);margin-bottom:12px;}
+  .hero-card-price del{font-size:15px;color:var(--muted);font-weight:400;margin-left:8px;}
+  .hero-amazon-btn{display:block;background:var(--amazon-orange);color:var(--charcoal);text-align:center;padding:11px;border-radius:6px;font-weight:700;font-size:14px;text-decoration:none;transition:opacity .2s,transform .15s;}
+  .hero-amazon-btn:hover{opacity:.9;transform:translateY(-1px);}
 
-  .cta-btn {
-    background: var(--burnt-orange);
-    color: #fff;
-    padding: 9px 20px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    letter-spacing: 0.03em;
-    transition: background 0.2s, transform 0.15s;
-  }
-  .cta-btn:hover { background: var(--rust); transform: translateY(-1px); }
+  /* Section headers */
+  .section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:36px;}
+  .section-label{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--burnt-orange);margin-bottom:6px;}
+  .section-title{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;color:var(--charcoal);line-height:1.2;}
+  .section-link{font-size:13px;font-weight:600;color:var(--burnt-orange);text-decoration:none;display:flex;align-items:center;gap:4px;white-space:nowrap;margin-bottom:4px;}
+  .section-link:hover{color:var(--rust);}
 
-  /* ─── HERO ─── */
-  .hero {
-    background: var(--charcoal);
-    padding: 80px 40px;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(196,84,26,0.18) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero::after {
-    content: '';
-    position: absolute;
-    bottom: -80px; left: 10%;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(232,137,26,0.1) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    align-items: center;
-  }
-  .hero-label {
-    display: inline-block;
-    background: rgba(196,84,26,0.2);
-    color: var(--amber);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    padding: 5px 12px;
-    border-radius: 20px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(196,84,26,0.3);
-  }
-  .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 52px;
-    font-weight: 900;
-    color: var(--cream);
-    line-height: 1.12;
-    margin-bottom: 20px;
-  }
-  .hero h1 em {
-    color: var(--burnt-orange);
-    font-style: italic;
-  }
-  .hero-sub {
-    font-size: 16px;
-    color: var(--light-muted);
-    line-height: 1.65;
-    margin-bottom: 32px;
-    font-weight: 300;
-  }
-  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
-  .btn-primary {
-    background: var(--burnt-orange);
-    color: #fff;
-    padding: 14px 28px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 15px;
-    text-decoration: none;
-    transition: background 0.2s, transform 0.15s;
-    display: inline-flex; align-items: center; gap: 8px;
-  }
-  .btn-primary:hover { background: var(--rust); transform: translateY(-2px); }
-  .btn-ghost {
-    border: 1.5px solid rgba(255,255,255,0.2);
-    color: var(--cream);
-    padding: 13px 26px;
-    border-radius: 8px;
-    font-weight: 500;
-    font-size: 15px;
-    text-decoration: none;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .btn-ghost:hover { border-color: var(--amber); background: rgba(232,137,26,0.07); }
+  /* Category filters */
+  .categories{background:var(--warm-white);border-bottom:1px solid var(--border);padding:0 40px;overflow-x:auto;}
+  .categories-inner{max-width:1200px;margin:0 auto;display:flex;gap:4px;padding:14px 0;}
+  .cat-btn{padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--slate);white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif;}
+  .cat-btn:hover{border-color:var(--burnt-orange);color:var(--burnt-orange);}
+  .cat-btn.active{background:var(--burnt-orange);border-color:var(--burnt-orange);color:#fff;font-weight:600;}
 
-  .hero-stats {
-    display: flex;
-    gap: 32px;
-    margin-top: 40px;
-    padding-top: 32px;
-    border-top: 1px solid rgba(255,255,255,0.08);
-  }
-  .stat-num {
-    font-family: 'Playfair Display', serif;
-    font-size: 30px;
-    font-weight: 700;
-    color: var(--amber);
-  }
-  .stat-label {
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 400;
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
+  /* Products */
+  .products-section{max-width:1200px;margin:0 auto;padding:64px 40px;}
+  .products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+  .product-card{background:var(--card-bg);border-radius:14px;overflow:hidden;border:1px solid var(--border);transition:transform .22s,box-shadow .22s;position:relative;}
+  .product-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(30,26,22,.12);}
+  .card-badges{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:5px;z-index:5;}
+  .badge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:4px;color:#fff;}
+  .badge-new{background:var(--badge-new);}
+  .badge-sale{background:var(--badge-sale);}
+  .badge-top{background:var(--badge-top);}
+  .badge-pick{background:var(--burnt-orange);}
+  .card-img-wrap{height:210px;background:#f7f2ed;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+  .card-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+  .card-img-wrap:hover img{transform:scale(1.04);}
+  .card-img-empty{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--light-muted);font-size:12px;text-align:center;}
+  .card-img-empty .img-icon{font-size:42px;}
+  .card-body{padding:20px 22px 22px;}
+  .card-brand{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;}
+  .card-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--charcoal);line-height:1.35;margin-bottom:8px;}
+  .stars-row{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+  .stars{color:var(--star);font-size:14px;letter-spacing:1px;}
+  .stars-num{font-size:13px;font-weight:600;color:var(--charcoal);}
+  .reviews-count{font-size:12px;color:var(--muted);}
+  .card-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px;}
+  .card-pros{list-style:none;margin-bottom:16px;display:flex;flex-direction:column;gap:4px;}
+  .card-pros li{font-size:12.5px;color:var(--slate);display:flex;align-items:flex-start;gap:7px;line-height:1.4;}
+  .card-pros li::before{content:'✓';color:var(--badge-new);font-weight:700;font-size:11px;flex-shrink:0;margin-top:1px;}
+  .card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);}
+  .card-price{display:flex;flex-direction:column;gap:1px;}
+  .price-current{font-size:22px;font-weight:700;color:var(--charcoal);font-family:'Playfair Display',serif;}
+  .price-was{font-size:12px;color:var(--muted);}
+  .price-was del{color:var(--badge-sale);}
+  .price-save{font-size:11px;color:var(--badge-new);font-weight:600;}
+  .amazon-link{display:inline-flex;align-items:center;gap:6px;background:var(--amazon-orange);color:var(--charcoal);font-size:13px;font-weight:700;padding:10px 16px;border-radius:7px;text-decoration:none;transition:opacity .2s,transform .15s;white-space:nowrap;}
+  .amazon-link:hover{opacity:.88;transform:translateY(-1px);}
+  .amazon-logo{font-size:16px;}
 
-  .hero-feature-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-    position: relative;
-  }
-  .hero-img-placeholder {
-    height: 280px;
-    background: linear-gradient(135deg, #2a2420 0%, #1e1a16 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 10px;
-    cursor: pointer;
-    transition: background 0.2s;
-    position: relative;
-  }
-  .hero-img-placeholder:hover { background: linear-gradient(135deg, #32281f 0%, #2a2420 100%); }
-  .hero-img-placeholder img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    position: absolute; inset: 0;
-    display: none;
-  }
-  .hero-img-placeholder img.loaded { display: block; }
-  .img-placeholder-text {
-    color: var(--muted);
-    font-size: 13px;
-    text-align: center;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-  }
-  .img-icon { font-size: 36px; opacity: 0.4; }
-  .hero-card-body { padding: 22px 24px; }
-  .hero-card-badge {
-    display: inline-block;
-    background: var(--burnt-orange);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-  }
-  .hero-card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--cream);
-    margin-bottom: 8px;
-    line-height: 1.3;
-  }
-  .hero-card-price {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--amber);
-    margin-bottom: 12px;
-  }
-  .hero-card-price del { font-size: 15px; color: var(--muted); font-weight: 400; margin-left: 8px; }
-  .hero-amazon-btn {
-    display: block;
-    background: var(--amazon-orange);
-    color: var(--charcoal);
-    text-align: center;
-    padding: 11px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 14px;
-    text-decoration: none;
-    transition: opacity 0.2s, transform 0.15s;
-  }
-  .hero-amazon-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  /* Reviews */
+  .reviews-section{background:var(--warm-white);padding:64px 40px;border-top:1px solid var(--border);}
+  .reviews-inner{max-width:1200px;margin:0 auto;}
+  .reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:36px;}
+  .review-card{background:var(--card-bg);border-radius:12px;padding:24px;border:1px solid var(--border);transition:box-shadow .2s;}
+  .review-card:hover{box-shadow:0 6px 20px rgba(30,26,22,.08);}
+  .review-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .reviewer-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--burnt-orange),var(--amber));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;}
+  .reviewer-name{font-weight:600;font-size:14px;color:var(--charcoal);}
+  .reviewer-verified{font-size:11px;color:var(--badge-new);font-weight:500;}
+  .review-stars{color:var(--star);font-size:13px;margin-bottom:8px;}
+  .review-title{font-weight:700;font-size:14px;color:var(--charcoal);margin-bottom:6px;}
+  .review-body{font-size:13px;color:var(--muted);line-height:1.6;}
+  .review-product{font-size:11px;color:var(--burnt-orange);font-weight:600;margin-top:10px;text-transform:uppercase;letter-spacing:.06em;}
 
-  /* ─── SECTION HEADERS ─── */
-  .section-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 36px;
-  }
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--burnt-orange);
-    margin-bottom: 6px;
-  }
-  .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 34px;
-    font-weight: 700;
-    color: var(--charcoal);
-    line-height: 1.2;
-  }
-  .section-link {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--burnt-orange);
-    text-decoration: none;
-    letter-spacing: 0.03em;
-    display: flex; align-items: center; gap: 4px;
-    white-space: nowrap;
-    margin-bottom: 4px;
-  }
-  .section-link:hover { color: var(--rust); }
+  /* Promo banner */
+  .promo-banner{background:linear-gradient(105deg,var(--charcoal) 0%,#2d2016 100%);padding:56px 40px;text-align:center;}
+  .promo-inner{max-width:680px;margin:0 auto;}
+  .promo-eyebrow{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--amber);margin-bottom:12px;}
+  .promo-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:900;color:var(--cream);margin-bottom:14px;line-height:1.2;}
+  .promo-title em{color:var(--burnt-orange);font-style:italic;}
+  .promo-sub{font-size:15px;color:var(--light-muted);margin-bottom:28px;font-weight:300;line-height:1.6;}
+  .promo-link{display:inline-flex;align-items:center;gap:8px;background:var(--amazon-orange);color:var(--charcoal);padding:14px 32px;border-radius:8px;font-weight:700;font-size:15px;text-decoration:none;transition:opacity .2s,transform .15s;}
+  .promo-link:hover{opacity:.9;transform:translateY(-2px);}
+  .disclaimer{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5;}
 
-  /* ─── CATEGORY FILTERS ─── */
-  .categories {
-    background: var(--warm-white);
-    border-bottom: 1px solid var(--border);
-    padding: 0 40px;
-    overflow-x: auto;
-  }
-  .categories-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    gap: 4px;
-    padding: 14px 0;
-  }
-  .cat-btn {
-    padding: 8px 18px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1.5px solid var(--border);
-    background: transparent;
-    color: var(--slate);
-    white-space: nowrap;
-    transition: all 0.2s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .cat-btn:hover { border-color: var(--burnt-orange); color: var(--burnt-orange); }
-  .cat-btn.active { background: var(--burnt-orange); border-color: var(--burnt-orange); color: #fff; font-weight: 600; }
+  /* Footer */
+  footer{background:var(--charcoal);padding:48px 40px 28px;color:var(--muted);}
+  .footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:36px;}
+  .footer-brand-name{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--cream);margin-bottom:10px;}
+  .footer-brand-name em{color:var(--burnt-orange);font-style:italic;}
+  .footer-desc{font-size:13px;line-height:1.65;margin-bottom:16px;}
+  .footer-h{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--cream);margin-bottom:14px;}
+  .footer-links{list-style:none;display:flex;flex-direction:column;gap:8px;}
+  .footer-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .2s;}
+  .footer-links a:hover{color:var(--amber);}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:22px;font-size:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .footer-bottom a{color:var(--muted);text-decoration:none;}
+  .footer-bottom a:hover{color:var(--amber);}
+  .affiliate-notice{background:rgba(255,255,255,.04);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:20px;border-left:3px solid var(--burnt-orange);}
 
-  /* ─── PRODUCTS SECTION ─── */
-  .products-section {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 64px 40px;
-  }
+  /* Notification */
+  .notif{position:fixed;top:20px;right:20px;background:var(--charcoal);color:var(--cream);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:99999;transform:translateX(120%);transition:transform .3s;border-left:3px solid var(--amber);}
+  .notif.show{transform:translateX(0);}
 
-  .products-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-  }
-
-  /* ─── PRODUCT CARD ─── */
-  .product-card {
-    background: var(--card-bg);
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    transition: transform 0.22s, box-shadow 0.22s;
-    position: relative;
-  }
-  .product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 40px rgba(30,26,22,0.12);
-  }
-
-  .card-badges {
-    position: absolute;
-    top: 12px; left: 12px;
-    display: flex; flex-direction: column; gap: 5px;
-    z-index: 5;
-  }
-  .badge {
-    display: inline-block;
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 3px 9px;
-    border-radius: 4px;
-    color: #fff;
-  }
-  .badge-new { background: var(--badge-new); }
-  .badge-sale { background: var(--badge-sale); }
-  .badge-top { background: var(--badge-top); }
-  .badge-pick { background: var(--burnt-orange); }
-
-  .card-img-wrap {
-    height: 210px;
-    background: #f7f2ed;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .card-img-wrap img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s;
-  }
-  .card-img-wrap:hover img { transform: scale(1.04); }
-  .card-img-empty {
-    display: flex; flex-direction: column; align-items: center; gap: 8px;
-    color: var(--light-muted);
-    font-size: 12px;
-    text-align: center;
-  }
-  .card-img-empty .img-icon { font-size: 42px; }
-
-  .card-body { padding: 20px 22px 22px; }
-  .card-brand {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-  }
-  .card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--charcoal);
-    line-height: 1.35;
-    margin-bottom: 8px;
-  }
-
-  .stars-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-  .stars { color: var(--star); font-size: 14px; letter-spacing: 1px; }
-  .stars-num { font-size: 13px; font-weight: 600; color: var(--charcoal); }
-  .reviews-count { font-size: 12px; color: var(--muted); }
-
-  .card-desc {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-bottom: 14px;
-  }
-  .card-pros {
-    list-style: none;
-    margin-bottom: 16px;
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .card-pros li {
-    font-size: 12.5px;
-    color: var(--slate);
-    display: flex; align-items: flex-start; gap: 7px;
-    line-height: 1.4;
-  }
-  .card-pros li::before {
-    content: '✓';
-    color: var(--badge-new);
-    font-weight: 700;
-    font-size: 11px;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
-  }
-  .card-price {
-    display: flex; flex-direction: column; gap: 1px;
-  }
-  .price-current {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--charcoal);
-    font-family: 'Playfair Display', serif;
-  }
-  .price-was { font-size: 12px; color: var(--muted); }
-  .price-was del { color: var(--badge-sale); }
-  .price-save { font-size: 11px; color: var(--badge-new); font-weight: 600; }
-
-  .amazon-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--amazon-orange);
-    color: var(--charcoal);
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 16px;
-    border-radius: 7px;
-    text-decoration: none;
-    transition: opacity 0.2s, transform 0.15s;
-    white-space: nowrap;
-  }
-  .amazon-link:hover { opacity: 0.88; transform: translateY(-1px); }
-  .amazon-logo { font-size: 16px; }
-
-  /* ─── EDIT TOOLBAR ─── */
-  .edit-toolbar {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--charcoal);
-    border-radius: 12px;
-    padding: 12px 20px;
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
-    z-index: 999;
-    flex-wrap: wrap;
-    max-width: 90vw;
-    justify-content: center;
-  }
-  .edit-toolbar span {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-weight: 600;
-    margin-right: 4px;
-  }
-  .tb-btn {
-    background: rgba(255,255,255,0.08);
-    color: var(--cream);
-    border: 1px solid rgba(255,255,255,0.12);
-    padding: 7px 14px;
-    border-radius: 6px;
-    font-size: 12.5px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.18s, border-color 0.18s;
-    font-family: 'DM Sans', sans-serif;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .tb-btn:hover { background: rgba(255,255,255,0.14); border-color: var(--amber); }
-  .tb-btn.danger:hover { background: rgba(196,84,26,0.25); border-color: var(--burnt-orange); }
-  .tb-btn.accent { background: var(--burnt-orange); border-color: var(--burnt-orange); }
-  .tb-btn.accent:hover { background: var(--rust); }
-
-  /* ─── RATING WIDGET ─── */
-  .editable-stars { cursor: pointer; user-select: none; }
-  .editable-stars:hover .star-i { color: var(--star); }
-
-  /* ─── REVIEW SECTION ─── */
-  .reviews-section {
-    background: var(--warm-white);
-    padding: 64px 40px;
-    border-top: 1px solid var(--border);
-  }
-  .reviews-inner { max-width: 1200px; margin: 0 auto; }
-  .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 36px; }
-  .review-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 24px;
-    border: 1px solid var(--border);
-    transition: box-shadow 0.2s;
-  }
-  .review-card:hover { box-shadow: 0 6px 20px rgba(30,26,22,0.08); }
-  .review-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .reviewer-avatar {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--burnt-orange), var(--amber));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 700; color: #fff;
-    flex-shrink: 0;
-  }
-  .reviewer-name { font-weight: 600; font-size: 14px; color: var(--charcoal); }
-  .reviewer-verified { font-size: 11px; color: var(--badge-new); font-weight: 500; }
-  .review-stars { color: var(--star); font-size: 13px; margin-bottom: 8px; }
-  .review-title { font-weight: 700; font-size: 14px; color: var(--charcoal); margin-bottom: 6px; }
-  .review-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .review-product { font-size: 11px; color: var(--burnt-orange); font-weight: 600; margin-top: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
-
-  /* ─── BANNER ─── */
-  .promo-banner {
-    background: linear-gradient(105deg, var(--charcoal) 0%, #2d2016 100%);
-    padding: 56px 40px;
-    text-align: center;
-  }
-  .promo-inner { max-width: 680px; margin: 0 auto; }
-  .promo-eyebrow {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--amber);
-    margin-bottom: 12px;
-  }
-  .promo-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 38px;
-    font-weight: 900;
-    color: var(--cream);
-    margin-bottom: 14px;
-    line-height: 1.2;
-  }
-  .promo-title em { color: var(--burnt-orange); font-style: italic; }
-  .promo-sub { font-size: 15px; color: var(--light-muted); margin-bottom: 28px; font-weight: 300; line-height: 1.6; }
-  .promo-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--amazon-orange);
-    color: var(--charcoal);
-    padding: 14px 32px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 15px;
-    text-decoration: none;
-    transition: opacity 0.2s, transform 0.15s;
-  }
-  .promo-link:hover { opacity: 0.9; transform: translateY(-2px); }
-  .disclaimer {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 14px;
-    line-height: 1.5;
-  }
-
-  /* ─── FOOTER ─── */
-  footer {
-    background: var(--charcoal);
-    padding: 48px 40px 28px;
-    color: var(--muted);
-  }
-  .footer-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: 48px;
-    margin-bottom: 36px;
-  }
-  .footer-brand-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 24px;
-    font-weight: 900;
-    color: var(--cream);
-    margin-bottom: 10px;
-  }
-  .footer-brand-name em { color: var(--burnt-orange); font-style: italic; }
-  .footer-desc { font-size: 13px; line-height: 1.65; margin-bottom: 16px; }
-  .footer-h { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cream); margin-bottom: 14px; }
-  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-  .footer-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
-  .footer-links a:hover { color: var(--amber); }
-  .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.07);
-    padding-top: 22px;
-    font-size: 12px;
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 12px;
-  }
-  .footer-bottom a { color: var(--muted); text-decoration: none; }
-  .footer-bottom a:hover { color: var(--amber); }
-  .affiliate-notice {
-    background: rgba(255,255,255,0.04);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-bottom: 20px;
-    border-left: 3px solid var(--burnt-orange);
-  }
-
-  /* ─── MODAL (Image Upload & Link Edit) ─── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.65);
-    z-index: 9999;
-    display: none; align-items: center; justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 32px;
-    width: 460px;
-    max-width: 92vw;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
-  }
-  .modal h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 6px;
-    color: var(--charcoal);
-  }
-  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-  .modal label { font-size: 13px; font-weight: 600; color: var(--slate); display: block; margin-bottom: 6px; }
-  .modal input[type="text"], .modal input[type="url"] {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 7px;
-    font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--charcoal);
-    margin-bottom: 14px;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  .modal input:focus { border-color: var(--burnt-orange); }
-  .modal input[type="file"] { margin-bottom: 14px; font-size: 13px; color: var(--muted); }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-  .modal-cancel {
-    padding: 9px 18px;
-    border-radius: 6px;
-    border: 1.5px solid var(--border);
-    background: transparent;
-    font-size: 13.5px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--slate);
-    transition: background 0.18s;
-  }
-  .modal-cancel:hover { background: var(--cream); }
-  .modal-save {
-    padding: 9px 20px;
-    border-radius: 6px;
-    background: var(--burnt-orange);
-    color: #fff;
-    border: none;
-    font-size: 13.5px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: background 0.18s;
-  }
-  .modal-save:hover { background: var(--rust); }
-
-  /* ─── NOTIFICATION ─── */
-  .notif {
-    position: fixed;
-    top: 20px; right: 20px;
-    background: var(--charcoal);
-    color: var(--cream);
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-    z-index: 99999;
-    transform: translateX(120%);
-    transition: transform 0.3s;
-    border-left: 3px solid var(--amber);
-  }
-  .notif.show { transform: translateX(0); }
-
-  @media (max-width: 900px) {
-    .hero-inner { grid-template-columns: 1fr; }
-    .products-grid { grid-template-columns: repeat(2, 1fr); }
-    .reviews-grid { grid-template-columns: 1fr; }
-    .footer-inner { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 580px) {
-    .products-grid { grid-template-columns: 1fr; }
-    .footer-inner { grid-template-columns: 1fr; }
-    .hero h1 { font-size: 36px; }
-  }
+  @media(max-width:900px){.hero-inner{grid-template-columns:1fr;}.products-grid{grid-template-columns:repeat(2,1fr);}.reviews-grid{grid-template-columns:1fr;}.footer-inner{grid-template-columns:1fr 1fr;}}
+  @media(max-width:580px){.products-grid{grid-template-columns:1fr;}.footer-inner{grid-template-columns:1fr;}.hero h1{font-size:36px;}}
 </style>
 </head>
 <body>
 
 <!-- TOP BAR -->
-<div class="topbar">
-  <span contenteditable="true">🔥 Amazon Prime Deal:</span>
-  <span contenteditable="true"> Up to 40% off KitchenAid appliances this week only →</span>
-</div>
+<div class="topbar"><span>🔥 Amazon Prime Deal:</span><span> Up to 40% off KitchenAid appliances this week only →</span></div>
 
 <!-- HEADER -->
 <header>
   <div class="header-inner">
-    <a href="#" class="logo">
-      <span class="logo-word">Appl<em>ianzo</em></span>
-      <span class="logo-tag">Kitchen Reviews</span>
-    </a>
+    <a href="/applianzo.html" class="logo"><span class="logo-word">Appl<em>ianzo</em></span><span class="logo-tag">Kitchen Reviews</span></a>
     <nav>
       <a href="#" class="active">Home</a>
       <a href="#">Appliances</a>
       <a href="#">Utensils</a>
       <a href="#">Reviews</a>
       <a href="#">Deals</a>
-      <a href="applianzo-login.html" id="nav-login-link" style="display:flex;align-items:center;gap:5px;">👤 Sign In</a>
-      <a href="applianzo-profile.html" id="nav-profile-link" style="display:none;align-items:center;gap:5px;">👤 My Profile</a>
-      <a href="applianzo-admin.html" id="nav-admin-link" style="display:none;align-items:center;gap:5px;font-size:13px;font-weight:600;color:#b069e8;text-decoration:none;padding:7px 14px;border:1.5px solid rgba(176,105,232,0.35);border-radius:6px;background:rgba(176,105,232,0.07);transition:all 0.2s;" onmouseover="this.style.background='rgba(176,105,232,0.15)'" onmouseout="this.style.background='rgba(176,105,232,0.07)'">🛡️ Admin</a>
-      <a href="#" class="cta-btn">Shop Amazon ↗</a>
+      <a href="/applianzo-login.html" id="nav-login-link">👤 Sign In</a>
+      <a href="/applianzo-profile.html" id="nav-profile-link" style="display:none;">👤 My Profile</a>
+      <a href="/applianzo-admin.html" id="nav-admin-link" style="display:none;font-size:13px;font-weight:600;color:#b069e8;text-decoration:none;padding:7px 14px;border:1.5px solid rgba(176,105,232,.35);border-radius:6px;background:rgba(176,105,232,.07);">🛡️ Admin</a>
+      <a href="https://amazon.com" class="cta-btn" target="_blank" rel="nofollow noopener">Shop Amazon ↗</a>
     </nav>
   </div>
 </header>
@@ -860,52 +224,31 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-content">
-      <div class="hero-label" contenteditable="true">✨ Editor's Picks 2025</div>
-      <h1 contenteditable="true">The Kitchen Gear <em>Worth Owning</em></h1>
-      <p class="hero-sub" contenteditable="true">We test every appliance so you don't have to. Honest reviews, real comparisons, and the best prices on Amazon — all in one place.</p>
+    <div>
+      <div class="hero-label">✨ Editor's Picks 2025</div>
+      <h1>The Kitchen Gear <em>Worth Owning</em></h1>
+      <p class="hero-sub">We test every appliance so you don't have to. Honest reviews, real comparisons, and the best prices on Amazon — all in one place.</p>
       <div class="hero-actions">
         <a href="#products" class="btn-primary">Browse Top Picks →</a>
         <a href="#reviews" class="btn-ghost">Read Reviews</a>
       </div>
       <div class="hero-stats">
-        <div>
-          <div class="stat-num" contenteditable="true">200+</div>
-          <div class="stat-label">Products Tested</div>
-        </div>
-        <div>
-          <div class="stat-num" contenteditable="true">12K+</div>
-          <div class="stat-label">Happy Readers</div>
-        </div>
-        <div>
-          <div class="stat-num" contenteditable="true">4.8★</div>
-          <div class="stat-label">Avg. Rating</div>
-        </div>
+        <div><div class="stat-num">200+</div><div class="stat-label">Products Tested</div></div>
+        <div><div class="stat-num">12K+</div><div class="stat-label">Happy Readers</div></div>
+        <div><div class="stat-num">4.8★</div><div class="stat-label">Avg. Rating</div></div>
       </div>
     </div>
-
     <div class="hero-feature-card">
-      <div class="hero-img-placeholder" onclick="openImgModal(this)" data-target="hero-img">
+      <div class="hero-img-placeholder" data-target="hero-img">
         <img id="hero-img" src="" alt="Featured product">
-        <div class="img-placeholder-text">
-          <span class="img-icon">📷</span>
-          <span>Click to add product image</span>
-          <span style="font-size:11px; opacity:0.6">URL or upload</span>
-        </div>
+        <div class="img-placeholder-text"><span class="img-icon">🍳</span><span>Top Pick of the Week</span></div>
       </div>
       <div class="hero-card-body">
-        <div class="hero-card-badge" contenteditable="true">🏆 #1 Best Seller</div>
-        <div class="hero-card-title" contenteditable="true">KitchenAid Artisan 5-Qt Stand Mixer</div>
-        <div class="hero-card-price">
-          <span contenteditable="true">$379.99</span>
-          <del contenteditable="true">$499.99</del>
-        </div>
-        <a class="hero-amazon-btn" id="hero-affiliate-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" onclick="event.stopPropagation()">
-          🛒 View on Amazon
-        </a>
-        <div style="font-size:11px; color:#6a9a6a; margin-top:8px; text-align:center;">
-          ✓ Free Prime Shipping · ✓ Easy Returns
-        </div>
+        <div class="hero-card-badge">🏆 #1 Best Seller</div>
+        <div class="hero-card-title">KitchenAid Artisan 5-Qt Stand Mixer</div>
+        <div class="hero-card-price"><span>$379.99</span><del>$499.99</del></div>
+        <a class="hero-amazon-btn" href="https://amazon.com" target="_blank" rel="nofollow noopener">🛒 View on Amazon</a>
+        <div style="font-size:11px;color:#6a9a6a;margin-top:8px;text-align:center;">✓ Free Prime Shipping · ✓ Easy Returns</div>
       </div>
     </div>
   </div>
@@ -928,315 +271,100 @@
 <!-- PRODUCTS -->
 <section class="products-section" id="products">
   <div class="section-header">
-    <div>
-      <div class="section-label">Top Rated Picks</div>
-      <div class="section-title" contenteditable="true">Our Best Kitchen Reviews</div>
-    </div>
-    <a href="#" class="section-link">View all products →</a>
+    <div><div class="section-label">Top Rated Picks</div><div class="section-title">Our Best Kitchen Reviews</div></div>
+    <a href="#" class="section-link">View all →</a>
   </div>
-
   <div class="products-grid" id="products-grid">
 
-    <!-- CARD 1 -->
     <div class="product-card" data-cat="blenders">
-      <div class="card-badges">
-        <span class="badge badge-top">Editor's Pick</span>
-        <span class="badge badge-sale">Sale</span>
-      </div>
-      <div class="card-img-wrap" onclick="openImgModal(this)" data-target="prod-img-1">
-        <img id="prod-img-1" src="" alt="Vitamix 5200" style="display:none">
-        <div class="card-img-empty">
-          <span class="img-icon">📷</span>
-          <span>Click to add image</span>
-        </div>
-      </div>
+      <div class="card-badges"><span class="badge badge-top">Editor's Pick</span><span class="badge badge-sale">Sale</span></div>
+      <div class="card-img-wrap" data-target="prod-img-1"><img id="prod-img-1" src="" alt="" style="display:none"><div class="card-img-empty"><span class="img-icon">🫙</span></div></div>
       <div class="card-body">
-        <div class="card-brand" contenteditable="true">Vitamix</div>
-        <div class="card-title" contenteditable="true">Vitamix 5200 Professional-Grade Blender</div>
-        <div class="stars-row">
-          <div class="stars editable-stars" data-rating="5" onclick="cycleRating(this)">★★★★★</div>
-          <span class="stars-num" contenteditable="true">4.8</span>
-          <span class="reviews-count" contenteditable="true">(2,341 reviews)</span>
-        </div>
-        <p class="card-desc" contenteditable="true">The gold standard in professional blenders. Variable speed control, self-cleaning design, and a motor that handles anything from ice to nut butters.</p>
-        <ul class="card-pros">
-          <li contenteditable="true">Aircraft-grade stainless blades</li>
-          <li contenteditable="true">Variable speed from 1–10</li>
-          <li contenteditable="true">Self-cleans in 60 seconds</li>
-        </ul>
-        <div class="card-footer">
-          <div class="card-price">
-            <span class="price-current" contenteditable="true">$449.95</span>
-            <span class="price-was">Was <del contenteditable="true">$549.95</del></span>
-            <span class="price-save" contenteditable="true">Save $100</span>
-          </div>
-          <a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" data-card="1" onclick="event.stopPropagation()">
-            <span class="amazon-logo">🛒</span> Amazon
-          </a>
-        </div>
+        <div class="card-brand">Vitamix</div>
+        <div class="card-title">Vitamix 5200 Professional-Grade Blender</div>
+        <div class="stars-row"><div class="stars editable-stars" data-rating="5">★★★★★</div><span class="stars-num">4.8</span><span class="reviews-count">(2,341 reviews)</span></div>
+        <p class="card-desc">The gold standard in professional blenders. Variable speed control, self-cleaning design, and a motor that handles anything from ice to nut butters.</p>
+        <ul class="card-pros"><li>Aircraft-grade stainless blades</li><li>Variable speed from 1–10</li><li>Self-cleans in 60 seconds</li></ul>
+        <div class="card-footer"><div class="card-price"><span class="price-current">$449.95</span><span class="price-was">Was <del>$549.95</del></span><span class="price-save">Save $100</span></div><a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener"><span class="amazon-logo">🛒</span> Amazon</a></div>
       </div>
     </div>
 
-    <!-- CARD 2 -->
     <div class="product-card" data-cat="coffee">
-      <div class="card-badges">
-        <span class="badge badge-new">New 2025</span>
-      </div>
-      <div class="card-img-wrap" onclick="openImgModal(this)" data-target="prod-img-2">
-        <img id="prod-img-2" src="" alt="Breville Oracle" style="display:none">
-        <div class="card-img-empty">
-          <span class="img-icon">📷</span>
-          <span>Click to add image</span>
-        </div>
-      </div>
+      <div class="card-badges"><span class="badge badge-new">New 2025</span></div>
+      <div class="card-img-wrap" data-target="prod-img-2"><img id="prod-img-2" src="" alt="" style="display:none"><div class="card-img-empty"><span class="img-icon">☕</span></div></div>
       <div class="card-body">
-        <div class="card-brand" contenteditable="true">Breville</div>
-        <div class="card-title" contenteditable="true">Breville Oracle Touch Espresso Machine</div>
-        <div class="stars-row">
-          <div class="stars editable-stars" data-rating="5" onclick="cycleRating(this)">★★★★★</div>
-          <span class="stars-num" contenteditable="true">4.7</span>
-          <span class="reviews-count" contenteditable="true">(1,892 reviews)</span>
-        </div>
-        <p class="card-desc" contenteditable="true">Café-quality espresso at home. Automated grind, dose, and tamp with a 67oz removable water tank and built-in grinder for unmatched convenience.</p>
-        <ul class="card-pros">
-          <li contenteditable="true">Built-in conical burr grinder</li>
-          <li contenteditable="true">Touchscreen TFT display</li>
-          <li contenteditable="true">Auto milk steaming & texturing</li>
-        </ul>
-        <div class="card-footer">
-          <div class="card-price">
-            <span class="price-current" contenteditable="true">$1,499.95</span>
-            <span class="price-was">Was <del contenteditable="true">$1,699.95</del></span>
-            <span class="price-save" contenteditable="true">Save $200</span>
-          </div>
-          <a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" data-card="2" onclick="event.stopPropagation()">
-            <span class="amazon-logo">🛒</span> Amazon
-          </a>
-        </div>
+        <div class="card-brand">Breville</div>
+        <div class="card-title">Breville Oracle Touch Espresso Machine</div>
+        <div class="stars-row"><div class="stars editable-stars" data-rating="5">★★★★★</div><span class="stars-num">4.7</span><span class="reviews-count">(1,892 reviews)</span></div>
+        <p class="card-desc">Café-quality espresso at home. Automated grind, dose, and tamp with a 67oz removable water tank and built-in grinder for unmatched convenience.</p>
+        <ul class="card-pros"><li>Built-in conical burr grinder</li><li>Touchscreen TFT display</li><li>Auto milk steaming & texturing</li></ul>
+        <div class="card-footer"><div class="card-price"><span class="price-current">$1,499.95</span><span class="price-was">Was <del>$1,699.95</del></span><span class="price-save">Save $200</span></div><a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener"><span class="amazon-logo">🛒</span> Amazon</a></div>
       </div>
     </div>
 
-    <!-- CARD 3 -->
     <div class="product-card" data-cat="knives">
-      <div class="card-badges">
-        <span class="badge badge-pick">Best Value</span>
-      </div>
-      <div class="card-img-wrap" onclick="openImgModal(this)" data-target="prod-img-3">
-        <img id="prod-img-3" src="" alt="Wüsthof Classic Knife" style="display:none">
-        <div class="card-img-empty">
-          <span class="img-icon">📷</span>
-          <span>Click to add image</span>
-        </div>
-      </div>
+      <div class="card-badges"><span class="badge badge-pick">Best Value</span></div>
+      <div class="card-img-wrap" data-target="prod-img-3"><img id="prod-img-3" src="" alt="" style="display:none"><div class="card-img-empty"><span class="img-icon">🔪</span></div></div>
       <div class="card-body">
-        <div class="card-brand" contenteditable="true">Wüsthof</div>
-        <div class="card-title" contenteditable="true">Wüsthof Classic 8" Chef's Knife</div>
-        <div class="stars-row">
-          <div class="stars editable-stars" data-rating="5" onclick="cycleRating(this)">★★★★★</div>
-          <span class="stars-num" contenteditable="true">4.9</span>
-          <span class="reviews-count" contenteditable="true">(5,670 reviews)</span>
-        </div>
-        <p class="card-desc" contenteditable="true">Forged from a single piece of high-carbon stainless steel. The knife every serious home cook reaches for — lifetime guarantee included.</p>
-        <ul class="card-pros">
-          <li contenteditable="true">Full bolster for balance & control</li>
-          <li contenteditable="true">58° Rockwell hardness</li>
-          <li contenteditable="true">Lifetime Wüsthof guarantee</li>
-        </ul>
-        <div class="card-footer">
-          <div class="card-price">
-            <span class="price-current" contenteditable="true">$164.95</span>
-            <span class="price-was">Was <del contenteditable="true">$194.95</del></span>
-            <span class="price-save" contenteditable="true">Save $30</span>
-          </div>
-          <a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" data-card="3" onclick="event.stopPropagation()">
-            <span class="amazon-logo">🛒</span> Amazon
-          </a>
-        </div>
+        <div class="card-brand">Wüsthof</div>
+        <div class="card-title">Wüsthof Classic 8" Chef's Knife</div>
+        <div class="stars-row"><div class="stars editable-stars" data-rating="5">★★★★★</div><span class="stars-num">4.9</span><span class="reviews-count">(5,670 reviews)</span></div>
+        <p class="card-desc">Forged from a single piece of high-carbon stainless steel. The knife every serious home cook reaches for — lifetime guarantee included.</p>
+        <ul class="card-pros"><li>Full bolster for balance & control</li><li>58° Rockwell hardness</li><li>Lifetime Wüsthof guarantee</li></ul>
+        <div class="card-footer"><div class="card-price"><span class="price-current">$164.95</span><span class="price-was">Was <del>$194.95</del></span><span class="price-save">Save $30</span></div><a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener"><span class="amazon-logo">🛒</span> Amazon</a></div>
       </div>
     </div>
 
-    <!-- CARD 4 -->
     <div class="product-card" data-cat="air-fryer">
-      <div class="card-badges">
-        <span class="badge badge-sale">Hot Deal</span>
-      </div>
-      <div class="card-img-wrap" onclick="openImgModal(this)" data-target="prod-img-4">
-        <img id="prod-img-4" src="" alt="Ninja Air Fryer" style="display:none">
-        <div class="card-img-empty">
-          <span class="img-icon">📷</span>
-          <span>Click to add image</span>
-        </div>
-      </div>
+      <div class="card-badges"><span class="badge badge-sale">Hot Deal</span></div>
+      <div class="card-img-wrap" data-target="prod-img-4"><img id="prod-img-4" src="" alt="" style="display:none"><div class="card-img-empty"><span class="img-icon">🌬️</span></div></div>
       <div class="card-body">
-        <div class="card-brand" contenteditable="true">Ninja</div>
-        <div class="card-title" contenteditable="true">Ninja AF101 Air Fryer, 4 Quart</div>
-        <div class="stars-row">
-          <div class="stars editable-stars" data-rating="4" onclick="cycleRating(this)">★★★★☆</div>
-          <span class="stars-num" contenteditable="true">4.6</span>
-          <span class="reviews-count" contenteditable="true">(28,441 reviews)</span>
-        </div>
-        <p class="card-desc" contenteditable="true">Air fry, roast, reheat, and dehydrate. 4-quart ceramic-coated basket, dishwasher safe, and up to 75% less fat than traditional frying methods.</p>
-        <ul class="card-pros">
-          <li contenteditable="true">75% less fat vs deep frying</li>
-          <li contenteditable="true">Dishwasher-safe ceramic basket</li>
-          <li contenteditable="true">4 versatile cooking programs</li>
-        </ul>
-        <div class="card-footer">
-          <div class="card-price">
-            <span class="price-current" contenteditable="true">$79.99</span>
-            <span class="price-was">Was <del contenteditable="true">$109.99</del></span>
-            <span class="price-save" contenteditable="true">Save $30</span>
-          </div>
-          <a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" data-card="4" onclick="event.stopPropagation()">
-            <span class="amazon-logo">🛒</span> Amazon
-          </a>
-        </div>
+        <div class="card-brand">Ninja</div>
+        <div class="card-title">Ninja AF101 Air Fryer, 4 Quart</div>
+        <div class="stars-row"><div class="stars editable-stars" data-rating="4">★★★★☆</div><span class="stars-num">4.6</span><span class="reviews-count">(28,441 reviews)</span></div>
+        <p class="card-desc">Air fry, roast, reheat, and dehydrate. 4-quart ceramic-coated basket, dishwasher safe, and up to 75% less fat than traditional frying methods.</p>
+        <ul class="card-pros"><li>75% less fat vs deep frying</li><li>Dishwasher-safe ceramic basket</li><li>4 versatile cooking programs</li></ul>
+        <div class="card-footer"><div class="card-price"><span class="price-current">$79.99</span><span class="price-was">Was <del>$109.99</del></span><span class="price-save">Save $30</span></div><a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener"><span class="amazon-logo">🛒</span> Amazon</a></div>
       </div>
     </div>
 
-    <!-- CARD 5 -->
     <div class="product-card" data-cat="cookware">
-      <div class="card-badges">
-        <span class="badge badge-top">Top Pick</span>
-      </div>
-      <div class="card-img-wrap" onclick="openImgModal(this)" data-target="prod-img-5">
-        <img id="prod-img-5" src="" alt="Le Creuset Dutch Oven" style="display:none">
-        <div class="card-img-empty">
-          <span class="img-icon">📷</span>
-          <span>Click to add image</span>
-        </div>
-      </div>
+      <div class="card-badges"><span class="badge badge-top">Top Pick</span></div>
+      <div class="card-img-wrap" data-target="prod-img-5"><img id="prod-img-5" src="" alt="" style="display:none"><div class="card-img-empty"><span class="img-icon">🥘</span></div></div>
       <div class="card-body">
-        <div class="card-brand" contenteditable="true">Le Creuset</div>
-        <div class="card-title" contenteditable="true">Le Creuset 5.5-Qt Signature Round Dutch Oven</div>
-        <div class="stars-row">
-          <div class="stars editable-stars" data-rating="5" onclick="cycleRating(this)">★★★★★</div>
-          <span class="stars-num" contenteditable="true">4.9</span>
-          <span class="reviews-count" contenteditable="true">(9,112 reviews)</span>
-        </div>
-        <p class="card-desc" contenteditable="true">The heirloom cookware piece. Enameled cast iron retains heat perfectly for braises, soups, and bread baking. Passes down generations.</p>
-        <ul class="card-pros">
-          <li contenteditable="true">Works on all cooktops incl. induction</li>
-          <li contenteditable="true">Oven safe to 500°F</li>
-          <li contenteditable="true">Lifetime manufacturer warranty</li>
-        </ul>
-        <div class="card-footer">
-          <div class="card-price">
-            <span class="price-current" contenteditable="true">$349.95</span>
-            <span class="price-was">Was <del contenteditable="true">$429.95</del></span>
-            <span class="price-save" contenteditable="true">Save $80</span>
-          </div>
-          <a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" data-card="5" onclick="event.stopPropagation()">
-            <span class="amazon-logo">🛒</span> Amazon
-          </a>
-        </div>
+        <div class="card-brand">Le Creuset</div>
+        <div class="card-title">Le Creuset 5.5-Qt Signature Round Dutch Oven</div>
+        <div class="stars-row"><div class="stars editable-stars" data-rating="5">★★★★★</div><span class="stars-num">4.9</span><span class="reviews-count">(9,112 reviews)</span></div>
+        <p class="card-desc">The heirloom cookware piece. Enameled cast iron retains heat perfectly for braises, soups, and bread baking. Passes down generations.</p>
+        <ul class="card-pros"><li>Works on all cooktops incl. induction</li><li>Oven safe to 500°F</li><li>Lifetime manufacturer warranty</li></ul>
+        <div class="card-footer"><div class="card-price"><span class="price-current">$349.95</span><span class="price-was">Was <del>$429.95</del></span><span class="price-save">Save $80</span></div><a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener"><span class="amazon-logo">🛒</span> Amazon</a></div>
       </div>
     </div>
 
-    <!-- CARD 6 -->
     <div class="product-card" data-cat="utensils">
-      <div class="card-badges">
-        <span class="badge badge-new">New</span>
-      </div>
-      <div class="card-img-wrap" onclick="openImgModal(this)" data-target="prod-img-6">
-        <img id="prod-img-6" src="" alt="OXO Utensil Set" style="display:none">
-        <div class="card-img-empty">
-          <span class="img-icon">📷</span>
-          <span>Click to add image</span>
-        </div>
-      </div>
+      <div class="card-badges"><span class="badge badge-new">New</span></div>
+      <div class="card-img-wrap" data-target="prod-img-6"><img id="prod-img-6" src="" alt="" style="display:none"><div class="card-img-empty"><span class="img-icon">🍴</span></div></div>
       <div class="card-body">
-        <div class="card-brand" contenteditable="true">OXO</div>
-        <div class="card-title" contenteditable="true">OXO Good Grips 15-Piece Stainless Utensil Set</div>
-        <div class="stars-row">
-          <div class="stars editable-stars" data-rating="4" onclick="cycleRating(this)">★★★★☆</div>
-          <span class="stars-num" contenteditable="true">4.5</span>
-          <span class="reviews-count" contenteditable="true">(3,780 reviews)</span>
-        </div>
-        <p class="card-desc" contenteditable="true">The last utensil set you'll ever buy. Non-slip grips, heat-resistant nylon heads, and dishwasher-safe construction for everyday cooking ease.</p>
-        <ul class="card-pros">
-          <li contenteditable="true">Non-scratch safe for all cookware</li>
-          <li contenteditable="true">Comfortable soft-grip handles</li>
-          <li contenteditable="true">Dishwasher safe & rust-resistant</li>
-        </ul>
-        <div class="card-footer">
-          <div class="card-price">
-            <span class="price-current" contenteditable="true">$69.99</span>
-            <span class="price-was">Was <del contenteditable="true">$89.99</del></span>
-            <span class="price-save" contenteditable="true">Save $20</span>
-          </div>
-          <a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" data-card="6" onclick="event.stopPropagation()">
-            <span class="amazon-logo">🛒</span> Amazon
-          </a>
-        </div>
+        <div class="card-brand">OXO</div>
+        <div class="card-title">OXO Good Grips 15-Piece Stainless Utensil Set</div>
+        <div class="stars-row"><div class="stars editable-stars" data-rating="4">★★★★☆</div><span class="stars-num">4.5</span><span class="reviews-count">(3,780 reviews)</span></div>
+        <p class="card-desc">The last utensil set you'll ever buy. Non-slip grips, heat-resistant nylon heads, and dishwasher-safe construction for everyday cooking ease.</p>
+        <ul class="card-pros"><li>Non-scratch safe for all cookware</li><li>Comfortable soft-grip handles</li><li>Dishwasher safe & rust-resistant</li></ul>
+        <div class="card-footer"><div class="card-price"><span class="price-current">$69.99</span><span class="price-was">Was <del>$89.99</del></span><span class="price-save">Save $20</span></div><a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener"><span class="amazon-logo">🛒</span> Amazon</a></div>
       </div>
     </div>
 
-  </div><!-- /products-grid -->
-
-  <div style="text-align:center; margin-top:40px;">
-    <button class="tb-btn accent" style="margin:0 auto; padding:14px 32px; font-size:14px;" onclick="addProductCard()">
-      + Add New Product Card
-    </button>
   </div>
 </section>
 
-<!-- REVIEWS SECTION -->
+<!-- REVIEWS -->
 <section class="reviews-section" id="reviews">
   <div class="reviews-inner">
-    <div class="section-header">
-      <div>
-        <div class="section-label">What Readers Say</div>
-        <div class="section-title" contenteditable="true">Real Reviews From Real Kitchens</div>
-      </div>
-    </div>
+    <div class="section-header"><div><div class="section-label">What Readers Say</div><div class="section-title">Real Reviews From Real Kitchens</div></div></div>
     <div class="reviews-grid">
-
-      <div class="review-card">
-        <div class="review-header">
-          <div class="reviewer-avatar" contenteditable="true">S</div>
-          <div>
-            <div class="reviewer-name" contenteditable="true">Sarah M.</div>
-            <div class="reviewer-verified">✓ Verified Purchase</div>
-          </div>
-        </div>
-        <div class="review-stars">★★★★★</div>
-        <div class="review-title" contenteditable="true">"Game changer for meal prep"</div>
-        <p class="review-body" contenteditable="true">I've had the Vitamix for 6 months now and it's transformed my mornings completely. Smoothies, soups, nut butters — it handles everything effortlessly. Worth every penny.</p>
-        <div class="review-product" contenteditable="true">Re: Vitamix 5200 Blender</div>
-      </div>
-
-      <div class="review-card">
-        <div class="review-header">
-          <div class="reviewer-avatar" contenteditable="true">J</div>
-          <div>
-            <div class="reviewer-name" contenteditable="true">James T.</div>
-            <div class="reviewer-verified">✓ Verified Purchase</div>
-          </div>
-        </div>
-        <div class="review-stars">★★★★★</div>
-        <div class="review-title" contenteditable="true">"Finally making café coffee at home"</div>
-        <p class="review-body" contenteditable="true">The Breville Oracle Touch is absolutely worth the investment. Set it up once, and every morning I get a perfect shot. The auto-milk texturing is incredible.</p>
-        <div class="review-product" contenteditable="true">Re: Breville Oracle Touch</div>
-      </div>
-
-      <div class="review-card">
-        <div class="review-header">
-          <div class="reviewer-avatar" contenteditable="true">P</div>
-          <div>
-            <div class="reviewer-name" contenteditable="true">Priya K.</div>
-            <div class="reviewer-verified">✓ Verified Purchase</div>
-          </div>
-        </div>
-        <div class="review-stars">★★★★★</div>
-        <div class="review-title" contenteditable="true">"My go-to knife for 3 years"</div>
-        <p class="review-body" contenteditable="true">The Wüsthof 8" is everything they say. It came razor sharp, stays sharp with minimal maintenance, and the balance is unlike anything else I've used. A true workhorse.</p>
-        <div class="review-product" contenteditable="true">Re: Wüsthof Classic 8" Knife</div>
-      </div>
-
-    </div>
-    <div style="text-align:center; margin-top:30px;">
-      <button class="tb-btn" onclick="addReviewCard()" style="padding:11px 24px;">+ Add Review</button>
+      <div class="review-card"><div class="review-header"><div class="reviewer-avatar">S</div><div><div class="reviewer-name">Sarah M.</div><div class="reviewer-verified">✓ Verified Purchase</div></div></div><div class="review-stars">★★★★★</div><div class="review-title">"Game changer for meal prep"</div><p class="review-body">I've had the Vitamix for 6 months now and it's transformed my mornings completely. Smoothies, soups, nut butters — it handles everything effortlessly. Worth every penny.</p><div class="review-product">Re: Vitamix 5200 Blender</div></div>
+      <div class="review-card"><div class="review-header"><div class="reviewer-avatar">J</div><div><div class="reviewer-name">James T.</div><div class="reviewer-verified">✓ Verified Purchase</div></div></div><div class="review-stars">★★★★★</div><div class="review-title">"Finally making café coffee at home"</div><p class="review-body">The Breville Oracle Touch is absolutely worth the investment. Set it up once, and every morning I get a perfect shot. The auto-milk texturing is incredible.</p><div class="review-product">Re: Breville Oracle Touch</div></div>
+      <div class="review-card"><div class="review-header"><div class="reviewer-avatar">P</div><div><div class="reviewer-name">Priya K.</div><div class="reviewer-verified">✓ Verified Purchase</div></div></div><div class="review-stars">★★★★★</div><div class="review-title">"My go-to knife for 3 years"</div><p class="review-body">The Wüsthof 8" is everything they say. It came razor sharp, stays sharp with minimal maintenance, and the balance is unlike anything else I've used. A true workhorse.</p><div class="review-product">Re: Wüsthof Classic 8" Knife</div></div>
     </div>
   </div>
 </section>
@@ -1244,13 +372,11 @@
 <!-- PROMO BANNER -->
 <div class="promo-banner">
   <div class="promo-inner">
-    <div class="promo-eyebrow" contenteditable="true">🔥 Limited Time Offer</div>
-    <h2 class="promo-title" contenteditable="true">Upgrade Your Kitchen With <em>Amazon Prime</em></h2>
-    <p class="promo-sub" contenteditable="true">Every product we review is linked directly to Amazon. Get free shipping, easy returns, and the best prices — all through trusted affiliate links.</p>
-    <a href="https://amazon.com" class="promo-link" target="_blank" rel="nofollow noopener" id="promo-affiliate-link">
-      🛒 Shop Our Picks on Amazon
-    </a>
-    <p class="disclaimer" contenteditable="true">* Prices may vary. Deals are subject to Amazon's availability and pricing policies.</p>
+    <div class="promo-eyebrow">🔥 Limited Time Offer</div>
+    <h2 class="promo-title">Upgrade Your Kitchen With <em>Amazon Prime</em></h2>
+    <p class="promo-sub">Every product we review is linked directly to Amazon. Get free shipping, easy returns, and the best prices — all through trusted affiliate links.</p>
+    <a href="https://amazon.com" class="promo-link" target="_blank" rel="nofollow noopener">🛒 Shop Our Picks on Amazon</a>
+    <p class="disclaimer">* Prices may vary. Deals are subject to Amazon's availability and pricing policies.</p>
   </div>
 </div>
 
@@ -1259,317 +385,119 @@
   <div class="footer-inner">
     <div>
       <div class="footer-brand-name">Appl<em>ianzo</em></div>
-      <p class="footer-desc" contenteditable="true">Independent kitchen appliance reviews and recommendations. We test products thoroughly so you can shop with confidence.</p>
-      <div class="affiliate-notice" contenteditable="true">
-        📌 Affiliate Disclosure: Applianzo participates in the Amazon Services LLC Associates Program. We earn a commission on qualifying purchases at no extra cost to you.
-      </div>
+      <p class="footer-desc">Independent kitchen appliance reviews and recommendations. We test products thoroughly so you can shop with confidence.</p>
+      <div class="affiliate-notice">📌 Affiliate Disclosure: Applianzo participates in the Amazon Services LLC Associates Program. We earn a commission on qualifying purchases at no extra cost to you.</div>
     </div>
-    <div>
-      <div class="footer-h">Categories</div>
-      <ul class="footer-links">
-        <li><a href="#">Stand Mixers</a></li>
-        <li><a href="#">Blenders</a></li>
-        <li><a href="#">Coffee Makers</a></li>
-        <li><a href="#">Air Fryers</a></li>
-        <li><a href="#">Cookware</a></li>
-        <li><a href="#">Knives</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-h">Reviews</div>
-      <ul class="footer-links">
-        <li><a href="#">Best of 2025</a></li>
-        <li><a href="#">Budget Picks</a></li>
-        <li><a href="#">Premium Gear</a></li>
-        <li><a href="#">Gift Guides</a></li>
-        <li><a href="#">Comparisons</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-h">About</div>
-      <ul class="footer-links">
-        <li><a href="#">Our Method</a></li>
-        <li><a href="#">Editorial Policy</a></li>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Contact Us</a></li>
-        <li><a href="#">Newsletter</a></li>
-      </ul>
-    </div>
+    <div><div class="footer-h">Categories</div><ul class="footer-links"><li><a href="#">Stand Mixers</a></li><li><a href="#">Blenders</a></li><li><a href="#">Coffee Makers</a></li><li><a href="#">Air Fryers</a></li><li><a href="#">Cookware</a></li><li><a href="#">Knives</a></li></ul></div>
+    <div><div class="footer-h">Reviews</div><ul class="footer-links"><li><a href="#">Best of 2025</a></li><li><a href="#">Budget Picks</a></li><li><a href="#">Premium Gear</a></li><li><a href="#">Gift Guides</a></li><li><a href="#">Comparisons</a></li></ul></div>
+    <div><div class="footer-h">About</div><ul class="footer-links"><li><a href="#">Our Method</a></li><li><a href="#">Editorial Policy</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Contact Us</a></li><li><a href="#">Newsletter</a></li></ul></div>
   </div>
   <div class="footer-bottom">
     <span>© 2025 <strong style="color:#c4b8ae;">Applianzo</strong> — All rights reserved.</span>
-    <span>
-      <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Affiliate Disclosure</a>
-      · <a href="applianzo-login.html" id="footer-admin-link" style="opacity:0.4; font-size:11px;" title="Admin access">⚙ Admin</a>
-    </span>
+    <span><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Affiliate Disclosure</a> · <a href="/applianzo-login.html" id="footer-admin-link" style="opacity:.4;font-size:11px;" title="Admin access">⚙ Admin</a></span>
   </div>
 </footer>
 
-<!-- EDIT TOOLBAR -->
-<div class="edit-toolbar" id="editToolbar">
-  <span>✏️ Edit Mode</span>
-  <button class="tb-btn" onclick="openLinkEditor()">🔗 Edit Affiliate Links</button>
-  <button class="tb-btn" onclick="addProductCard()">+ Add Product</button>
-  <button class="tb-btn" onclick="addReviewCard()">+ Add Review</button>
-  <button class="tb-btn danger" onclick="toggleEditMode()">🔒 Lock Editing</button>
-</div>
-
-<!-- IMAGE MODAL -->
-<div class="modal-overlay" id="imgModal">
-  <div class="modal">
-    <h3>📷 Add Product Image</h3>
-    <p>Paste an image URL or upload a file from your device.</p>
-    <label>Image URL</label>
-    <input type="url" id="img-url-input" placeholder="https://example.com/product.jpg">
-    <label>Or upload a file</label>
-    <input type="file" id="img-file-input" accept="image/*">
-    <div class="modal-actions">
-      <button class="modal-cancel" onclick="closeModal('imgModal')">Cancel</button>
-      <button class="modal-save" onclick="saveImage()">Save Image</button>
-    </div>
-  </div>
-</div>
-
-<!-- AFFILIATE LINK MODAL -->
-<div class="modal-overlay" id="linkModal">
-  <div class="modal">
-    <h3>🔗 Edit Affiliate Links</h3>
-    <p>Update your Amazon affiliate links below. Include your Associate tag (e.g. ?tag=yourID-20).</p>
-    <div id="link-fields"></div>
-    <div class="modal-actions">
-      <button class="modal-cancel" onclick="closeModal('linkModal')">Cancel</button>
-      <button class="modal-save" onclick="saveLinks()">Save Links</button>
-    </div>
-  </div>
-</div>
-
-<!-- NOTIFICATION -->
 <div class="notif" id="notif"></div>
 
 <script>
-  let currentImgTarget = null;
-  let editMode = true;
-
-  // ── CATEGORY FILTER ──
+  // PUBLIC: category filter only — no edit tools, no contenteditable, nothing admin
   function filterCat(cat) {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
     event.target.classList.add('active');
     document.querySelectorAll('.product-card').forEach(card => {
-      if (cat === 'all' || card.dataset.cat === cat) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
+      card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
     });
   }
-
-  // ── STAR RATING CYCLE ──
-  function cycleRating(el) {
-    let r = parseInt(el.dataset.rating || 5);
-    r = r >= 5 ? 1 : r + 1;
-    el.dataset.rating = r;
-    el.textContent = '★'.repeat(r) + '☆'.repeat(5 - r);
-    notify('Rating updated to ' + r + ' stars');
-  }
-
-  // ── IMAGE MODAL ──
-  function openImgModal(el) {
-    currentImgTarget = el.dataset.target;
-    document.getElementById('img-url-input').value = '';
-    document.getElementById('img-file-input').value = '';
-    document.getElementById('imgModal').classList.add('open');
-  }
-
-  function saveImage() {
-    const url = document.getElementById('img-url-input').value.trim();
-    const fileInput = document.getElementById('img-file-input');
-    const target = document.getElementById(currentImgTarget);
-
-    if (fileInput.files && fileInput.files[0]) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        applyImage(target, e.target.result);
-      };
-      reader.readAsDataURL(fileInput.files[0]);
-    } else if (url) {
-      applyImage(target, url);
-    } else {
-      notify('Please enter a URL or select a file');
-      return;
-    }
-    closeModal('imgModal');
-    notify('✓ Image saved!');
-  }
-
-  function applyImage(imgEl, src) {
-    if (!imgEl) return;
-    imgEl.src = src;
-    imgEl.style.display = 'block';
-    imgEl.classList.add('loaded');
-    // Hide placeholder text
-    const wrap = imgEl.parentElement;
-    const empty = wrap.querySelector('.card-img-empty, .img-placeholder-text');
-    if (empty) empty.style.display = 'none';
-  }
-
-  // ── AFFILIATE LINKS MODAL ──
-  function openLinkEditor() {
-    const links = document.querySelectorAll('.amazon-link, .hero-amazon-btn, .promo-link');
-    const container = document.getElementById('link-fields');
-    container.innerHTML = '';
-
-    const labels = ['Hero Feature Card', 'Card 1: Vitamix Blender', 'Card 2: Breville Espresso', 'Card 3: Wüsthof Knife', 'Card 4: Ninja Air Fryer', 'Card 5: Le Creuset Dutch Oven', 'Card 6: OXO Utensil Set', 'Promo Banner'];
-
-    links.forEach((link, i) => {
-      const label = document.createElement('label');
-      label.textContent = labels[i] || `Link ${i+1}`;
-      const input = document.createElement('input');
-      input.type = 'url';
-      input.value = link.href;
-      input.dataset.idx = i;
-      container.appendChild(label);
-      container.appendChild(input);
-    });
-    document.getElementById('linkModal').classList.add('open');
-  }
-
-  function saveLinks() {
-    const inputs = document.querySelectorAll('#link-fields input');
-    const links = document.querySelectorAll('.amazon-link, .hero-amazon-btn, .promo-link');
-    inputs.forEach((input, i) => {
-      if (links[i] && input.value.trim()) {
-        links[i].href = input.value.trim();
-      }
-    });
-    closeModal('linkModal');
-    notify('✓ Affiliate links saved!');
-  }
-
-  // ── ADD PRODUCT CARD ──
-  function addProductCard() {
-    const grid = document.getElementById('products-grid');
-    const id = 'prod-img-' + Date.now();
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.dataset.cat = 'all';
-    card.innerHTML = `
-      <div class="card-badges"><span class="badge badge-new" contenteditable="true">New</span></div>
-      <div class="card-img-wrap" onclick="openImgModal(this)" data-target="${id}">
-        <img id="${id}" src="" alt="Product" style="display:none">
-        <div class="card-img-empty"><span class="img-icon">📷</span><span>Click to add image</span></div>
-      </div>
-      <div class="card-body">
-        <div class="card-brand" contenteditable="true">Brand Name</div>
-        <div class="card-title" contenteditable="true">Product Name Here</div>
-        <div class="stars-row">
-          <div class="stars editable-stars" data-rating="5" onclick="cycleRating(this)">★★★★★</div>
-          <span class="stars-num" contenteditable="true">5.0</span>
-          <span class="reviews-count" contenteditable="true">(0 reviews)</span>
-        </div>
-        <p class="card-desc" contenteditable="true">Click here to write your product description. Highlight the key features and benefits for your readers.</p>
-        <ul class="card-pros">
-          <li contenteditable="true">Feature one</li>
-          <li contenteditable="true">Feature two</li>
-          <li contenteditable="true">Feature three</li>
-        </ul>
-        <div class="card-footer">
-          <div class="card-price">
-            <span class="price-current" contenteditable="true">$0.00</span>
-            <span class="price-was">Was <del contenteditable="true">$0.00</del></span>
-            <span class="price-save" contenteditable="true">Save $0</span>
-          </div>
-          <a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" onclick="event.stopPropagation()">
-            <span class="amazon-logo">🛒</span> Amazon
-          </a>
-        </div>
-      </div>`;
-    grid.insertBefore(card, grid.lastElementChild);
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    notify('✓ Product card added — click fields to edit');
-  }
-
-  // ── ADD REVIEW CARD ──
-  function addReviewCard() {
-    const grid = document.querySelector('.reviews-grid');
-    const card = document.createElement('div');
-    card.className = 'review-card';
-    card.innerHTML = `
-      <div class="review-header">
-        <div class="reviewer-avatar" contenteditable="true">A</div>
-        <div>
-          <div class="reviewer-name" contenteditable="true">Reviewer Name</div>
-          <div class="reviewer-verified">✓ Verified Purchase</div>
-        </div>
-      </div>
-      <div class="review-stars">★★★★★</div>
-      <div class="review-title" contenteditable="true">"Your review headline here"</div>
-      <p class="review-body" contenteditable="true">Write the reviewer's feedback here. Click to edit this text and make it authentic.</p>
-      <div class="review-product" contenteditable="true">Re: Product Name</div>`;
-    grid.appendChild(card);
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    notify('✓ Review added — click to edit');
-  }
-
-  // ── EDIT MODE TOGGLE ──
-  function toggleEditMode() {
-    editMode = !editMode;
-    const allEditable = document.querySelectorAll('[contenteditable]');
-    const toolbar = document.getElementById('editToolbar');
-    allEditable.forEach(el => {
-      el.contentEditable = editMode ? 'true' : 'false';
-    });
-    const lockBtn = toolbar.querySelector('.tb-btn.danger');
-    if (editMode) {
-      lockBtn.textContent = '🔒 Lock Editing';
-      toolbar.style.display = 'flex';
-      notify('✏️ Edit mode enabled');
-    } else {
-      lockBtn.textContent = '✏️ Enable Editing';
-      notify('🔒 Edit mode locked');
-    }
-  }
-
-  // ── CLOSE MODAL ──
-  function closeModal(id) {
-    document.getElementById(id).classList.remove('open');
-  }
-  document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', function(e) {
-      if (e.target === this) closeModal(this.id);
-    });
-  });
-
-  // ── NOTIFY ──
   function notify(msg) {
-    const n = document.getElementById('notif');
-    n.textContent = msg;
-    n.classList.add('show');
+    const n = document.getElementById('notif'); if (!n) return;
+    n.textContent = msg; n.classList.add('show');
     setTimeout(() => n.classList.remove('show'), 2800);
   }
+  function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('open'); }
+  document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) closeModal(e.target.id); });
+
+  // SUPERADMIN EDIT MODE — injected ONLY for verified superadmin session
+  var _imgT = null;
+  (function() {
+    try {
+      var s = JSON.parse(localStorage.getItem('applianzo_admin_session') || 'null');
+      if (!s || s.role !== 'superadmin') return;
+      var ok = s.email === 'esraigroup@gmail.com';
+      if (!ok) {
+        var d = JSON.parse(localStorage.getItem('applianzo_admins') || '[]');
+        var m = d.find(function(a){return a.email===s.email;});
+        if (m && m.role==='superadmin' && m.status!=='suspended') ok = true;
+      }
+      if (!ok) return;
+
+      // Toolbar
+      var tb = document.createElement('div'); tb.id='editToolbar'; tb.className='edit-toolbar';
+      tb.innerHTML='<span>&#9999;&#65039; Superadmin</span>'
+        +'<button class="tb-btn" onclick="oLE()">&#128279; Affiliate Links</button>'
+        +'<button class="tb-btn" onclick="aPC()">+ Product</button>'
+        +'<button class="tb-btn" onclick="aRC()">+ Review</button>'
+        +'<button class="tb-btn" onclick="location.href=\'/applianzo-admin.html\'">&#9881; Admin Panel</button>'
+        +'<button class="tb-btn danger" onclick="dEM()">&#128274; Exit</button>';
+      document.body.appendChild(tb);
+
+      // Image modal
+      var im=document.createElement('div'); im.className='modal-overlay'; im.id='imgModal';
+      im.innerHTML='<div class="modal"><h3>Add Product Image</h3><p>Paste a URL or upload a file.</p>'
+        +'<label>Image URL</label><input type="url" id="iui" placeholder="https://example.com/product.jpg">'
+        +'<label>Or upload</label><input type="file" id="ifi" accept="image/*">'
+        +'<div class="modal-actions"><button class="modal-cancel" onclick="closeModal(\'imgModal\')">Cancel</button>'
+        +'<button class="modal-save" onclick="sI()">Save</button></div></div>';
+      document.body.appendChild(im);
+
+      // Affiliate modal
+      var lm=document.createElement('div'); lm.className='modal-overlay'; lm.id='linkModal';
+      lm.innerHTML='<div class="modal"><h3>Edit Affiliate Links</h3>'
+        +'<p>Update Amazon affiliate URLs. Include your Associate tag (?tag=yourID-20).</p>'
+        +'<div id="link-fields"></div>'
+        +'<div class="modal-actions"><button class="modal-cancel" onclick="closeModal(\'linkModal\')">Cancel</button>'
+        +'<button class="modal-save" onclick="sL()">Save Links</button></div></div>';
+      document.body.appendChild(lm);
+
+      // Enable contenteditable
+      ['.topbar span','.hero-label','h1','.hero-sub','.stat-num','.hero-card-badge','.hero-card-title',
+       '.hero-card-price span','.hero-card-price del','.section-title','.card-brand','.card-title',
+       '.stars-num','.reviews-count','.card-desc','.card-pros li','.price-current','.price-was del',
+       '.price-save','.reviewer-name','.review-title','.review-body','.review-product',
+       '.promo-eyebrow','.promo-title','.promo-sub','.disclaimer','.footer-desc','.affiliate-notice'
+      ].forEach(function(sel){document.querySelectorAll(sel).forEach(function(el){el.contentEditable='true';});});
+
+      document.querySelectorAll('.card-img-wrap,.hero-img-placeholder').forEach(function(el){
+        el.style.cursor='pointer'; el.onclick=function(){oIM(this);};
+      });
+      document.querySelectorAll('.editable-stars').forEach(function(el){
+        el.style.cursor='pointer'; el.onclick=function(){cR(this);};
+      });
+      notify('Superadmin edit mode active');
+    } catch(e){}
+  })();
+
+  function oIM(el){_imgT=el.dataset.target;var u=document.getElementById('iui');if(u)u.value='';var f=document.getElementById('ifi');if(f)f.value='';var m=document.getElementById('imgModal');if(m)m.classList.add('open');}
+  function sI(){var url=(document.getElementById('iui')||{}).value||'';var fi=document.getElementById('ifi');var tgt=document.getElementById(_imgT);if(fi&&fi.files&&fi.files[0]){var r=new FileReader();r.onload=function(e){aI(tgt,e.target.result);};r.readAsDataURL(fi.files[0]);}else if(url.trim()){aI(tgt,url.trim());}else{notify('Enter a URL or select a file');return;}closeModal('imgModal');notify('Image saved!');}
+  function aI(el,src){if(!el)return;el.src=src;el.style.display='block';el.classList.add('loaded');var e=el.parentElement&&el.parentElement.querySelector('.card-img-empty,.img-placeholder-text');if(e)e.style.display='none';}
+  function oLE(){var links=document.querySelectorAll('.amazon-link,.hero-amazon-btn,.promo-link');var c=document.getElementById('link-fields');if(!c)return;c.innerHTML='';var lbls=['Hero','Card 1','Card 2','Card 3','Card 4','Card 5','Card 6','Promo'];links.forEach(function(link,i){var l=document.createElement('label');l.textContent=lbls[i]||'Link '+(i+1);var inp=document.createElement('input');inp.type='url';inp.value=link.href;inp.style.cssText='width:100%;padding:8px 10px;margin-bottom:10px;background:#f7f2ed;border:1.5px solid #e8dfd4;border-radius:7px;font-size:13px;font-family:monospace;';c.appendChild(l);c.appendChild(inp);});document.getElementById('linkModal').classList.add('open');}
+  function sL(){var inputs=document.querySelectorAll('#link-fields input');var links=document.querySelectorAll('.amazon-link,.hero-amazon-btn,.promo-link');inputs.forEach(function(inp,i){if(links[i]&&inp.value.trim())links[i].href=inp.value.trim();});closeModal('linkModal');notify('Affiliate links saved!');}
+  function cR(el){var r=parseInt(el.dataset.rating||5);r=r>=5?1:r+1;el.dataset.rating=r;el.textContent='★'.repeat(r)+'☆'.repeat(5-r);}
+  function aPC(){var grid=document.getElementById('products-grid');if(!grid)return;var id='pi_'+Date.now();var card=document.createElement('div');card.className='product-card';card.dataset.cat='all';card.innerHTML='<div class="card-badges"><span class="badge badge-new" contenteditable="true">New</span></div><div class="card-img-wrap" style="cursor:pointer" data-target="'+id+'" onclick="oIM(this)"><img id="'+id+'" src="" style="display:none"><div class="card-img-empty"><span class="img-icon">📷</span><span>Click to add</span></div></div><div class="card-body"><div class="card-brand" contenteditable="true">Brand</div><div class="card-title" contenteditable="true">Product Name</div><div class="stars-row"><div class="stars editable-stars" data-rating="5" style="cursor:pointer" onclick="cR(this)">★★★★★</div><span class="stars-num" contenteditable="true">5.0</span><span class="reviews-count" contenteditable="true">(0)</span></div><p class="card-desc" contenteditable="true">Description.</p><ul class="card-pros"><li contenteditable="true">Feature one</li><li contenteditable="true">Feature two</li><li contenteditable="true">Feature three</li></ul><div class="card-footer"><div class="card-price"><span class="price-current" contenteditable="true">$0.00</span><span class="price-was">Was <del contenteditable="true">$0.00</del></span><span class="price-save" contenteditable="true">Save $0</span></div><a class="amazon-link" href="https://amazon.com" target="_blank" rel="nofollow noopener" onclick="event.stopPropagation()"><span class="amazon-logo">🛒</span> Amazon</a></div></div>';grid.insertBefore(card,grid.lastElementChild);card.scrollIntoView({behavior:'smooth',block:'center'});notify('Product added');}
+  function aRC(){var grid=document.querySelector('.reviews-grid');if(!grid)return;var card=document.createElement('div');card.className='review-card';card.innerHTML='<div class="review-header"><div class="reviewer-avatar" contenteditable="true">A</div><div><div class="reviewer-name" contenteditable="true">Name</div><div class="reviewer-verified">✓ Verified</div></div></div><div class="review-stars">★★★★★</div><div class="review-title" contenteditable="true">"Headline"</div><p class="review-body" contenteditable="true">Review text.</p><div class="review-product" contenteditable="true">Re: Product</div>';grid.appendChild(card);card.scrollIntoView({behavior:'smooth',block:'center'});notify('Review added');}
+  function dEM(){document.querySelectorAll('[contenteditable]').forEach(function(el){el.removeAttribute('contenteditable');});var tb=document.getElementById('editToolbar');if(tb)tb.remove();var im=document.getElementById('imgModal');if(im)im.remove();var lm=document.getElementById('linkModal');if(lm)lm.remove();notify('Edit mode exited');}
 </script>
 
 <script>
-  // Show profile/admin links based on session
+  // Session state — show correct nav links
   try {
-    const u = JSON.parse(localStorage.getItem('applianzo_user') || 'null');
-    if (u) {
-      document.getElementById('nav-login-link').style.display = 'none';
-      document.getElementById('nav-profile-link').style.display = 'flex';
-    }
-    // Show admin panel link if admin session active
-    const adminSession = JSON.parse(localStorage.getItem('applianzo_admin_session') || 'null');
-    if (adminSession && (adminSession.role === 'admin' || adminSession.role === 'superadmin')) {
-      const adminLink = document.getElementById('nav-admin-link');
-      adminLink.style.display = 'flex';
-      adminLink.href = 'applianzo-admin.html';
-      // Also upgrade the footer admin link to be more prominent
-      const footerLink = document.getElementById('footer-admin-link');
-      if (footerLink) {
-        footerLink.style.opacity = '1';
-        footerLink.style.color = '#b069e8';
-        footerLink.href = 'applianzo-admin.html';
-        footerLink.textContent = '🛡️ Admin Panel';
-      }
+    var u = JSON.parse(localStorage.getItem('applianzo_user')||'null');
+    if (u) { document.getElementById('nav-login-link').style.display='none'; document.getElementById('nav-profile-link').style.display='flex'; }
+    var a = JSON.parse(localStorage.getItem('applianzo_admin_session')||'null');
+    if (a && (a.role==='admin'||a.role==='superadmin')) {
+      var al=document.getElementById('nav-admin-link'); al.style.display='flex'; al.href='/applianzo-admin.html';
+      var fl=document.getElementById('footer-admin-link');
+      if(fl){fl.style.opacity='1';fl.style.color='#b069e8';fl.href='/applianzo-admin.html';fl.textContent='🛡️ Admin Panel';}
     }
   } catch(e) {}
 </script>

@@ -655,7 +655,7 @@
       Password: <code>Esrai@2025#Super</code>
     </div>
   </div>
-  <a href="applianzo.html" class="gate-back">← Back to Applianzo</a>
+  <a href="/applianzo.html" class="gate-back">← Back to Applianzo</a>
 </div>
 
 <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
@@ -715,10 +715,10 @@
     </a>
 
     <div class="nav-group-label">Account</div>
-    <a class="nav-item" href="applianzo.html" target="_blank">
+    <a class="nav-item" href="/applianzo.html" target="_blank">
       <span class="nav-icon">🌐</span> View Site
     </a>
-    <a class="nav-item" href="applianzo-profile.html">
+    <a class="nav-item" href="/applianzo-profile.html">
       <span class="nav-icon">👤</span> My Profile
     </a>
   </div>
@@ -744,7 +744,7 @@
       <div class="page-title" id="topbar-title">Dashboard</div>
     </div>
     <div class="topbar-right">
-      <a href="applianzo.html" target="_blank">
+      <a href="/applianzo.html" target="_blank">
         <button class="topbar-btn btn-ghost-sm">🌐 View Site</button>
       </a>
       <button class="topbar-btn btn-primary-sm" onclick="showSection('products')">+ Add Product</button>
@@ -2268,7 +2268,7 @@
   function signOut(){
     localStorage.removeItem('applianzo_admin_session');
     localStorage.removeItem('applianzo_user');
-    window.location.href='applianzo.html';
+    window.location.href='/applianzo.html';
   }
 
   function escHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
