@@ -2,16 +2,19 @@
   "name": "applianzo",
   "version": "1.0.0",
   "private": true,
-  "description": "Applianzo starter project for GitHub, Netlify, and Neon",
+  "description": "Applianzo — country-aware Amazon kitchen discovery site",
   "scripts": {
     "dev": "netlify dev",
     "start": "netlify dev"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4",
+    "@neondatabase/serverless": "0.10.4",
     "amazon-paapi": "1.0.11"
   },
   "devDependencies": {
-    "netlify-cli": "^17.38.1"
+    "netlify-cli": "17.38.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
