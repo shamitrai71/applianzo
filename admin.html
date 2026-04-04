@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Applianzo Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0d0d0d; --surface:#141414; --surface2:#1a1a1a; --surface3:#202020;
+      --border:#2a2a2a; --border2:#333;
+      --text:#f0f0f0; --muted:#666; --muted2:#888;
+      --green:#22c55e; --green-d:#16a34a; --green-dim:#0f2d1a; --green-glow:rgba(34,197,94,.18);
+      --red:#ef4444; --amber:#f59e0b;
+      --radius:8px; --radius-lg:12px; --radius-xl:16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+    html { height:100%; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
+      font-size:14px; line-height:1.6; min-height:100vh; }
+    a { color:var(--green); text-decoration:none; }
+    code { font-family:monospace; font-size:12px; background:var(--surface3);
+      padding:1px 5px; border-radius:4px; color:var(--muted2); }
+
+    /* ── Logo SVG mark ─────────────────────────── */
+    .logo-mark { display:inline-flex; align-items:center; gap:10px; }
+    .logo-svg { flex-shrink:0; }
+    .logo-wordmark { font-size:17px; font-weight:800; letter-spacing:-.4px; color:var(--text); }
+
+    /* ── Login ─────────────────────────────────── */
+    #loginScreen { display:flex; align-items:center; justify-content:center;
+      min-height:100vh; background:var(--bg);
+      background-image:radial-gradient(ellipse 60% 50% at 50% 0%, rgba(34,197,94,.08) 0%, transparent 70%); }
+    .login-box { background:var(--surface); border:1px solid var(--border2);
+      border-radius:var(--radius-xl); padding:40px 36px; width:360px;
+      box-shadow:0 24px 80px rgba(0,0,0,.6); }
+    .login-logo { margin-bottom:28px; }
+    .login-box h2 { font-size:20px; font-weight:700; margin-bottom:4px; }
+    .login-box .sub { color:var(--muted2); font-size:13px; margin-bottom:28px; }
+    .login-divider { border:none; border-top:1px solid var(--border); margin:20px 0; }
+
+    /* ── Shell ─────────────────────────────────── */
+    .shell { display:flex; min-height:100vh; }
+    .sidebar { width:230px; flex-shrink:0; background:var(--surface);
+      border-right:1px solid var(--border); display:flex; flex-direction:column; }
+    .sb-brand { padding:20px 16px 18px; border-bottom:1px solid var(--border); }
+    .sb-role { font-size:11px; color:var(--muted); margin-top:6px;
+      display:flex; align-items:center; gap:5px; }
+    .sb-role-dot { width:7px; height:7px; border-radius:50%; background:var(--green);
+      box-shadow:0 0 6px var(--green); }
+    .sb-nav { flex:1; padding:10px 8px; display:flex; flex-direction:column; gap:1px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px;
+      border-radius:var(--radius); cursor:pointer; color:var(--muted2); font-weight:500;
+      border:none; background:none; width:100%; text-align:left; font-size:13px;
+      transition:background .15s, color .15s; }
+    .nav-item:hover { background:var(--surface2); color:var(--text); }
+    .nav-item.active { background:var(--green-dim); color:var(--green); border:1px solid rgba(34,197,94,.2); }
+    .nav-icon { width:18px; text-align:center; font-size:14px; }
+    .sb-footer { padding:12px 10px; border-top:1px solid var(--border); }
+    .user-row { display:flex; align-items:center; gap:9px; padding:8px 10px;
+      border-radius:var(--radius); background:var(--surface2); margin-bottom:8px; }
+    .user-avatar { width:28px; height:28px; border-radius:50%; background:var(--green-dim);
+      border:1px solid var(--green); display:grid; place-items:center;
+      font-size:11px; font-weight:700; color:var(--green); flex-shrink:0; }
+    .user-info strong { display:block; font-size:12px; font-weight:600; }
+    .user-info span { font-size:10px; color:var(--muted); }
+
+    /* ── Main ──────────────────────────────────── */
+    .main { flex:1; overflow:auto; display:flex; flex-direction:column; }
+    .topbar { background:var(--surface); border-bottom:1px solid var(--border);
+      padding:13px 24px; display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:10; }
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    .topbar h1 { font-size:15px; font-weight:700; }
+    .topbar-breadcrumb { font-size:12px; color:var(--muted); }
+    .content { padding:24px; max-width:1140px; flex:1; }
+
+    /* ── Forms ─────────────────────────────────── */
+    label { display:block; font-size:11px; font-weight:700; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; }
+    input, select, textarea {
+      width:100%; padding:9px 12px; background:var(--surface2); border:1px solid var(--border2);
+      border-radius:var(--radius); color:var(--text); font:inherit; font-size:13px;
+      transition:border-color .15s; }
+    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--green);
+      box-shadow:0 0 0 3px var(--green-glow); }
+    textarea { resize:vertical; min-height:80px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .form-grid.cols3 { grid-template-columns:1fr 1fr 1fr; }
+    .form-full { grid-column:1/-1; }
+    .field { margin-bottom:14px; }
+
+    /* ── Buttons ───────────────────────────────── */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
+      border-radius:var(--radius); font:inherit; font-size:13px; font-weight:600;
+      cursor:pointer; border:1px solid var(--border2); background:var(--surface2);
+      color:var(--text); transition:all .15s; white-space:nowrap; }
+    .btn:hover { border-color:var(--border2); background:var(--surface3); }
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-primary { background:var(--green); border-color:var(--green); color:#000; font-weight:700; }
+    .btn-primary:hover { background:var(--green-d); border-color:var(--green-d); }
+    .btn-danger  { background:var(--red); border-color:var(--red); color:white; }
+    .btn-danger:hover { opacity:.85; }
+    .btn-sm { padding:5px 10px; font-size:12px; }
+    .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+    .btn-full { width:100%; justify-content:center; padding:11px 16px; }
+
+    /* ── Cards ─────────────────────────────────── */
+    .card { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:20px; margin-bottom:20px; }
+    .card-title { font-size:11px; font-weight:700; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--muted); margin-bottom:18px;
+      display:flex; align-items:center; justify-content:space-between; }
+
+    /* ── Stats ─────────────────────────────────── */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border);
+      border-radius:var(--radius-lg); padding:18px 20px; }
+    .stat-card .val { font-size:30px; font-weight:800; line-height:1; color:var(--text); }
+    .stat-card .lbl { font-size:11px; color:var(--muted); margin-top:5px;
+      text-transform:uppercase; letter-spacing:.05em; }
+    .stat-card.accent .val { color:var(--green); }
+
+    /* ── Table ─────────────────────────────────── */
+    .table-wrap { overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; padding:9px 14px; border-bottom:1px solid var(--border);
+      font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+      color:var(--muted); background:var(--surface2); }
+    td { padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:var(--surface2); }
+    .actions-cell { display:flex; gap:5px; }
+
+    /* ── Badges / tags ─────────────────────────── */
+    .badge { display:inline-block; padding:2px 8px; border-radius:999px;
+      font-size:11px; font-weight:700; }
+    .badge-green { background:var(--green-dim); color:var(--green); }
+    .badge-blue  { background:#1e3347; color:#60a5fa; }
+    .badge-amber { background:#2d1f00; color:#fbbf24; }
+    .tag { display:inline-block; padding:2px 8px; border-radius:5px;
+      font-size:11px; font-weight:600; background:var(--surface3); color:var(--muted2); }
+
+    /* ── Toast ─────────────────────────────────── */
+    #toast { position:fixed; bottom:24px; right:24px; padding:12px 20px;
+      border-radius:var(--radius); font-size:13px; font-weight:600;
+      background:var(--green); color:#000; opacity:0;
+      transition:opacity .3s; pointer-events:none; z-index:9999;
+      box-shadow:0 8px 24px rgba(0,0,0,.4); }
+    #toast.show { opacity:1; }
+    #toast.error { background:var(--red); color:white; }
+
+    /* ── Modal ─────────────────────────────────── */
+    .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.7);
+      display:flex; align-items:center; justify-content:center; z-index:100;
+      backdrop-filter:blur(2px); }
+    .modal-bg.hidden { display:none; }
+    .modal { background:var(--surface); border:1px solid var(--border2);
+      border-radius:var(--radius-xl); padding:28px; width:min(540px,94vw);
+      max-height:88vh; overflow-y:auto; }
+    .modal h3 { font-size:15px; font-weight:700; margin-bottom:20px; }
+
+    /* ── Misc ──────────────────────────────────── */
+    .empty { padding:40px; text-align:center; color:var(--muted); }
+    .d-none { display:none !important; }
+    .tab-section { display:none; }
+    .tab-section.active { display:block; }
+    .err-text { color:var(--red); font-size:12px; margin-bottom:10px; }
+
+    @media (max-width:700px) {
+      .shell { flex-direction:column; }
+      .sidebar { width:100%; }
+      .sb-nav { flex-direction:row; flex-wrap:wrap; padding:8px; }
+      .nav-item { flex:1; min-width:100px; justify-content:center; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+      .form-grid,.form-grid.cols3 { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <!-- Applianzo SVG logo mark -->
+      <div class="logo-mark">
+        <svg class="logo-svg" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="9" fill="#0d0d0d"/>
+          <!-- A legs -->
+          <line x1="8" y1="28" x2="18" y2="8" stroke="#f0f0f0" stroke-width="2.8" stroke-linecap="round"/>
+          <line x1="28" y1="28" x2="18" y2="8" stroke="#f0f0f0" stroke-width="2.8" stroke-linecap="round"/>
+          <!-- Green tick crossbar -->
+          <polyline points="12,21 16,25 24,17" stroke="#22c55e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="logo-wordmark">Applianzo</span>
+      </div>
+    </div>
+
+    <h2>Super Admin Sign In</h2>
+    <p class="sub">ESRAI Group · Restricted access</p>
+
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="loginEmail" value="" placeholder="admin@example.com" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" value="" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <div id="loginError" class="err-text d-none"></div>
+    <button class="btn btn-primary btn-full" id="loginBtn" onclick="doLogin()">Sign in to Admin Panel</button>
+    <hr class="login-divider"/>
+    <p style="font-size:11px;color:var(--muted);text-align:center;">
+      Secured by <code>ADMIN_TOKEN</code> · Applianzo v1.0
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ADMIN SHELL
+══════════════════════════════════════════════════════ -->
+<div id="adminShell" class="shell d-none">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="logo-mark">
+        <svg class="logo-svg" width="30" height="30" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="9" fill="#141414"/>
+          <line x1="8" y1="28" x2="18" y2="8" stroke="#f0f0f0" stroke-width="2.8" stroke-linecap="round"/>
+          <line x1="28" y1="28" x2="18" y2="8" stroke="#f0f0f0" stroke-width="2.8" stroke-linecap="round"/>
+          <polyline points="12,21 16,25 24,17" stroke="#22c55e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="logo-wordmark" style="font-size:15px;">Applianzo</span>
+      </div>
+      <div class="sb-role">
+        <span class="sb-role-dot"></span>
+        <span>Super Admin · ESRAI Group</span>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <button class="nav-item active" onclick="showTab('stats',this)">
+        <span class="nav-icon">📊</span> Stats &amp; Cache
+      </button>
+      <button class="nav-item" onclick="showTab('editorial',this)">
+        <span class="nav-icon">✏️</span> Editorial
+      </button>
+      <button class="nav-item" onclick="showTab('categories',this)">
+        <span class="nav-icon">🏷️</span> Categories
+      </button>
+      <button class="nav-item" onclick="showTab('countries',this)">
+        <span class="nav-icon">🌍</span> Countries
+      </button>
+      <button class="nav-item" onclick="showTab('heroimage',this)">
+        <span class="nav-icon">🖼️</span> Hero Image
+      </button>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="user-row">
+        <div class="user-avatar">SA</div>
+        <div class="user-info">
+          <strong>Super Admin</strong>
+          <span id="sb-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5e3b2d2c3f37392c312b2e1e39333f3732703d3133">[email&#160;protected]</a></span>
+        </div>
+      </div>
+      <button class="btn btn-sm" style="width:100%;justify-content:center" onclick="doLogout()">Sign out</button>
+    </div>
+  </aside>
+
+  <!-- Main area -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-breadcrumb">Admin /</span>
+        <h1 id="pageTitle">Stats &amp; Cache</h1>
+      </div>
+      <a href="/" target="_blank" class="btn btn-sm">↗ View site</a>
+    </div>
+
+    <div class="content">
+
+      <!-- ── STATS ── -->
+      <div id="tab-stats" class="tab-section active">
+        <div class="stats-grid">
+          <div class="stat-card accent">
+            <div class="val" id="st-searches">—</div>
+            <div class="lbl">Searches · last hour</div>
+          </div>
+          <div class="stat-card">
+            <div class="val" id="st-total">—</div>
+            <div class="lbl">Total searches · session</div>
+          </div>
+          <div class="stat-card">
+            <div class="val" id="st-cached">—</div>
+            <div class="lbl">Live cache entries</div>
+          </div>
+          <div class="stat-card">
+            <div class="val" id="st-time">—</div>
+            <div class="lbl">Server time UTC</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Cache breakdown</div>
+          <div class="table-wrap">
+            <table id="cacheTable">
+              <thead><tr><th>Cache</th><th>Live entries</th><th>Total slots</th><th>TTL</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            Top search queries · last hour
+            <button class="btn btn-sm" onclick="loadStats()">↻ Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table id="topQueriesTable">
+              <thead><tr><th>Country</th><th>Query</th><th>Hits</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EDITORIAL ── -->
+      <div id="tab-editorial" class="tab-section">
+        <div class="card">
+          <div class="card-title">Add / Edit editorial review</div>
+          <div class="form-grid">
+            <div>
+              <label>ASIN</label>
+              <input id="ed-asin" type="text" placeholder="B0XXXXXXXXX" maxlength="10"
+                oninput="this.value=this.value.toUpperCase()"/>
+            </div>
+            <div>
+              <label>Country</label>
+              <select id="ed-country">
+                <option value="in">🇮🇳 India</option>
+                <option value="us">🇺🇸 United States</option>
+                <option value="uk">🇬🇧 United Kingdom</option>
+              </select>
+            </div>
+            <div class="form-full">
+              <label>Summary</label>
+              <textarea id="ed-summary" placeholder="1–2 sentence editorial summary…"></textarea>
+            </div>
+            <div>
+              <label>Pros</label>
+              <textarea id="ed-pros" placeholder="e.g. Easy controls; compact; fast heat-up"></textarea>
+            </div>
+            <div>
+              <label>Cons</label>
+              <textarea id="ed-cons" placeholder="e.g. Small basket; no digital display"></textarea>
+            </div>
+            <div class="form-full">
+              <label>Best for</label>
+              <input id="ed-bestfor" type="text" placeholder="e.g. Small families, first-time buyers"/>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn" onclick="loadEditorialForEdit()">Load by ASIN</button>
+            <button class="btn btn-primary" onclick="saveEditorial()">Save editorial</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEditorial()">Delete</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            All editorial entries
+            <button class="btn btn-sm" onclick="loadAllEditorial()">↻ Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table id="editorialTable">
+              <thead><tr><th>ASIN</th><th>Country</th><th>Summary</th><th>Best for</th><th>Updated</th><th>Actions</th></tr></thead>
+              <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CATEGORIES ── -->
+      <div id="tab-categories" class="tab-section">
+        <div class="card">
+          <div class="card-title">Add new category</div>
+          <div class="form-grid cols3">
+            <div>
+              <label>Country</label>
+              <select id="cat-country">
+                <option value="in">🇮🇳 India</option>
+                <option value="us">🇺🇸 United States</option>
+                <option value="uk">🇬🇧 United Kingdom</option>
+              </select>
+            </div>
+            <div>
+              <label>Name</label>
+              <input id="cat-name" type="text" placeholder="Air Fryers"/>
+            </div>
+            <div>
+              <label>Slug</label>
+              <input id="cat-slug" type="text" placeholder="air-fryers"/>
+            </div>
+            <div class="form-full">
+              <label>Search keyword</label>
+              <input id="cat-keyword" type="text" placeholder="air fryer"/>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveCategory()">Add category</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            All categories
+            <select id="cat-filter" onchange="loadAllCategories()"
+              style="font-size:12px;padding:4px 8px;width:auto;background:var(--surface2);">
+              <option value="">All countries</option>
+              <option value="in">🇮🇳 India</option>
+              <option value="us">🇺🇸 United States</option>
+              <option value="uk">🇬🇧 United Kingdom</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table id="categoriesTable">
+              <thead><tr><th>ID</th><th>Country</th><th>Name</th><th>Slug</th><th>Keyword</th><th>Actions</th></tr></thead>
+              <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+          <div class="btn-row"><button class="btn" onclick="loadAllCategories()">↻ Refresh</button></div>
+        </div>
+      </div>
+
+      <!-- ── COUNTRIES ── -->
+      <div id="tab-countries" class="tab-section">
+        <div class="card">
+          <div class="card-title">Add / update country</div>
+          <div class="form-grid">
+            <div>
+              <label>Code (e.g. in)</label>
+              <input id="co-code" type="text" maxlength="5" placeholder="in"
+                oninput="this.value=this.value.toLowerCase()"/>
+            </div>
+            <div>
+              <label>Name</label>
+              <input id="co-name" type="text" placeholder="India"/>
+            </div>
+            <div>
+              <label>Amazon domain</label>
+              <input id="co-domain" type="text" placeholder="amazon.in"/>
+            </div>
+            <div>
+              <label>Marketplace</label>
+              <input id="co-marketplace" type="text" placeholder="www.amazon.in"/>
+            </div>
+            <div>
+              <label>Default language</label>
+              <input id="co-lang" type="text" placeholder="en_IN"/>
+            </div>
+            <div>
+              <label>Currency</label>
+              <input id="co-currency" type="text" placeholder="INR"/>
+            </div>
+            <div class="form-full">
+              <label>Associate tag</label>
+              <input id="co-tag" type="text" placeholder="yourtag-21"/>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="saveCountry()">Save country</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            All countries
+            <button class="btn btn-sm" onclick="loadAllCountries()">↻ Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table id="countriesTable">
+              <thead><tr><th>Code</th><th>Name</th><th>Marketplace</th><th>Currency</th><th>Associate tag</th><th>Actions</th></tr></thead>
+              <tbody><tr><td colspan="6" class="empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── HERO IMAGE ── -->
+      <div id="tab-heroimage" class="tab-section">
+
+        <div class="card" style="border:2px dashed var(--green);background:var(--green-dim);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:22px;">📐</span>
+            <div>
+              <div style="font-weight:700;font-size:14px;color:var(--green);">Optimum image size</div>
+              <div style="font-size:12px;color:var(--muted2);margin-top:2px;">
+                <strong style="color:var(--text);">1400 × 520 px</strong> &nbsp;·&nbsp;
+                JPEG or WebP &nbsp;·&nbsp; max <strong style="color:var(--text);">500 KB</strong> &nbsp;·&nbsp;
+                Aspect ratio <strong style="color:var(--text);">2.7 : 1</strong>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted2);line-height:1.7;">
+            Use a landscape kitchen scene — appliances, ingredients, or a styled countertop.
+            The image sits behind the headline and panels, so <strong style="color:var(--text);">keep the left third relatively plain</strong> (solid colour or soft blur) so text stays readable.
+            A gradient overlay is applied automatically.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Current hero image</div>
+          <div id="heroPreviewWrap" style="border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;background:var(--surface2);min-height:120px;display:flex;align-items:center;justify-content:center;">
+            <div id="heroPreviewPlaceholder" style="color:var(--muted);font-size:13px;padding:32px;">
+              Loading…
+            </div>
+            <img id="heroPreview" src="" alt="Hero preview"
+              style="display:none;width:100%;max-height:260px;object-fit:cover;object-position:center;"
+              onload="this.style.display='block';document.getElementById('heroPreviewPlaceholder').style.display='none';"
+              onerror="this.style.display='none';document.getElementById('heroPreviewPlaceholder').textContent='Could not load image — check the URL.';"
+            />
+          </div>
+          <div id="heroCurrentUrl" style="font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:16px;"></div>
+          <button class="btn btn-danger btn-sm" onclick="removeHeroImage()">Remove image (restore SVG default)</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Upload new hero image</div>
+
+          <!-- Drag & drop upload zone -->
+          <div id="dropZone" style="
+            border: 2px dashed var(--border2); border-radius: 10px; padding: 36px 20px;
+            text-align: center; cursor: pointer; margin-bottom: 16px;
+            transition: border-color .2s, background .2s;"
+            onclick="document.getElementById('heroFileInput').click()"
+            ondragover="event.preventDefault();this.style.borderColor='var(--green)';this.style.background='var(--green-dim)';"
+            ondragleave="this.style.borderColor='var(--border2)';this.style.background='';"
+            ondrop="handleDrop(event)">
+            <div style="font-size:32px;margin-bottom:8px;">📁</div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:4px;">Drop image here or click to browse</div>
+            <div style="font-size:12px;color:var(--muted);">JPEG / WebP / PNG · 1400 × 520 px recommended · max 500 KB</div>
+          </div>
+          <input type="file" id="heroFileInput" accept="image/jpeg,image/webp,image/png" style="display:none" onchange="handleFileSelect(this)"/>
+
+          <div id="uploadPreviewWrap" style="display:none;margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Preview</div>
+            <div style="border-radius:8px;overflow:hidden;border:1px solid var(--border);">
+              <img id="uploadPreview" src="" alt="Upload preview" style="width:100%;max-height:220px;object-fit:cover;display:block;"/>
+            </div>
+            <div id="uploadFileMeta" style="font-size:11px;color:var(--muted);margin-top:6px;"></div>
+          </div>
+
+          <div id="uploadProgress" style="display:none;margin-bottom:12px;">
+            <div style="font-size:12px;color:var(--muted2);margin-bottom:6px;" id="uploadProgressText">Uploading…</div>
+            <div style="background:var(--border);border-radius:999px;height:4px;">
+              <div id="uploadProgressBar" style="background:var(--green);height:4px;border-radius:999px;width:0%;transition:width .3s;"></div>
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;"/>
+
+          <div style="margin-bottom:6px;">
+            <label>Or paste an image URL directly</label>
+            <div style="display:flex;gap:8px;margin-top:6px;">
+              <input id="heroUrlInput" type="url" placeholder="https://example.com/kitchen-hero.jpg" style="flex:1;"/>
+              <button class="btn btn-primary" onclick="saveHeroUrl()">Save URL</button>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:5px;">
+              Works with any direct image URL — Cloudinary, Imgix, Unsplash, etc.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- Edit modal -->
+<div id="editModal" class="modal-bg hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Edit</h3>
+    <div id="modalBody"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="modalSaveBtn">Save</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ── Credentials ────────────────────────────────────────────────────────────
+  // Super-admin credentials are validated client-side; the ADMIN_TOKEN
+  // (set as a Netlify env var) is sent in the X-Admin-Token header for
+  // every API call. The token itself is never exposed in this file —
+  // it lives only in the Netlify environment.
+  const SUPER_EMAIL    = 'esraigroup@gmail.com';
+  const SUPER_PASSWORD = 'super123';
+
+  const API = '/.netlify/functions/api';
+  let adminToken = sessionStorage.getItem('applianzo_admin_token') || '';
+
+  // ── Login ──────────────────────────────────────────────────────────────────
+  async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    const btn   = document.getElementById('loginBtn');
+
+    errEl.classList.add('d-none');
+
+    if (email !== SUPER_EMAIL || pass !== SUPER_PASSWORD) {
+      errEl.textContent = 'Invalid email or password.';
+      errEl.classList.remove('d-none');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+
+    // Verify that ADMIN_TOKEN is configured by calling the stats endpoint.
+    // The token must be set in Netlify env vars — this UI doesn't know it.
+    // We derive it from the environment by checking if the API responds to
+    // a known super-admin credential approach. Since we can't embed the token
+    // here, we use the email+pass combo to unlock the stored session token,
+    // or prompt once if it's the first time.
+    let token = sessionStorage.getItem('applianzo_admin_token') || '';
+
+    if (!token) {
+      // First login on this device — ask for the Netlify ADMIN_TOKEN once.
+      token = prompt('One-time setup: paste your Netlify ADMIN_TOKEN to complete sign-in.\n(This is stored in sessionStorage only, never persisted to disk.)');
+      if (!token) { btn.disabled = false; btn.textContent = 'Sign in to Admin Panel'; return; }
+    }
+
+    const r = await fetch(`${API}/admin/stats`, { headers: { 'X-Admin-Token': token } });
+    if (r.ok) {
+      adminToken = token;
+      sessionStorage.setItem('applianzo_admin_token', token);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminShell').classList.remove('d-none');
+      loadStats();
+    } else {
+      sessionStorage.removeItem('applianzo_admin_token');
+      errEl.textContent = 'ADMIN_TOKEN invalid or not set in Netlify. Check your environment variables.';
+      errEl.classList.remove('d-none');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Sign in to Admin Panel';
+  }
+
+  ['loginEmail','loginPassword'].forEach(id =>
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); })
+  );
+
+  function doLogout() {
+    sessionStorage.removeItem('applianzo_admin_token');
+    location.reload();
+  }
+
+  // Auto-restore session
+  if (adminToken) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminShell').classList.remove('d-none');
+    loadStats();
+  }
+
+  // ── API helper ─────────────────────────────────────────────────────────────
+  async function api(path, method='GET', body=null) {
+    const opts = { method, headers:{'Content-Type':'application/json','X-Admin-Token':adminToken} };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(`${API}/admin/${path}`, opts);
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok) throw new Error(d.message||`HTTP ${r.status}`);
+    return d;
+  }
+
+  // ── Toast ──────────────────────────────────────────────────────────────────
+  function toast(msg, isErr=false) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = isErr ? 'error show' : 'show';
+    setTimeout(()=>el.className='', 3000);
+  }
+
+  // ── Tabs ───────────────────────────────────────────────────────────────────
+  const TITLES = {stats:'Stats & Cache', editorial:'Editorial', categories:'Categories', countries:'Countries', heroimage:'Hero Image'};
+  function showTab(name, btn) {
+    document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    document.getElementById(`tab-${name}`).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById('pageTitle').textContent = TITLES[name];
+    if (name==='stats')      loadStats();
+    if (name==='editorial')  loadAllEditorial();
+    if (name==='categories') loadAllCategories();
+    if (name==='countries')  loadAllCountries();
+  }
+
+  // ── Modal ──────────────────────────────────────────────────────────────────
+  function openModal(title, html, saveFn) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalSaveBtn').onclick = saveFn;
+    document.getElementById('editModal').classList.remove('hidden');
+  }
+  function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
+  document.getElementById('editModal').addEventListener('click', e=>{
+    if (e.target===e.currentTarget) closeModal();
+  });
+
+  // ── STATS ──────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const d = await api('stats');
+      document.getElementById('st-searches').textContent = d.searches.lastHour;
+      document.getElementById('st-total').textContent    = d.searches.total;
+      const live = Object.values(d.cache).reduce((s,c)=>s+c.live,0);
+      document.getElementById('st-cached').textContent = live;
+      document.getElementById('st-time').textContent =
+        new Date(d.serverTime).toUTCString().slice(17,25);
+
+      document.querySelector('#cacheTable tbody').innerHTML =
+        Object.entries(d.cache).map(([n,c])=>`
+          <tr>
+            <td><span class="badge badge-green">${n}</span></td>
+            <td>${c.live}</td><td>${c.total}</td><td>${c.ttlSeconds}s</td>
+          </tr>`).join('');
+
+      const qb = document.querySelector('#topQueriesTable tbody');
+      qb.innerHTML = d.searches.topQueries.length
+        ? d.searches.topQueries.map(q=>`
+            <tr>
+              <td><span class="tag">${q.country}</span></td>
+              <td>${esc(q.query)}</td>
+              <td><strong>${q.count}</strong></td>
+            </tr>`).join('')
+        : '<tr><td colspan="3" class="empty">No searches recorded yet this hour.</td></tr>';
+    } catch(err) { toast(err.message, true); }
+  }
+
+  // ── EDITORIAL ─────────────────────────────────────────────────────────────
+  async function loadAllEditorial() {
+    try {
+      const d = await api('editorial');
+      const tb = document.querySelector('#editorialTable tbody');
+      tb.innerHTML = d.editorial.length
+        ? d.editorial.map(e=>`
+            <tr>
+              <td><code>${esc(e.asin)}</code></td>
+              <td><span class="tag">${esc(e.country_code)}</span></td>
+              <td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.summary||'—')}</td>
+              <td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.best_for||'—')}</td>
+              <td>${fmtDate(e.updated_at)}</td>
+              <td class="actions-cell">
+                <button class="btn btn-sm" onclick="fillEdForm('${esc(e.asin)}','${esc(e.country_code)}')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="delEdRow('${esc(e.asin)}','${esc(e.country_code)}')">Del</button>
+              </td>
+            </tr>`).join('')
+        : '<tr><td colspan="6" class="empty">No editorial entries yet.</td></tr>';
+    } catch(err) { toast(err.message,true); }
+  }
+
+  function fillEdForm(asin, country) {
+    api(`editorial?asin=${asin}&country=${country}`).then(d=>{
+      const e=d.editorial; if(!e){toast('Not found',true);return;}
+      document.getElementById('ed-asin').value    = e.asin;
+      document.getElementById('ed-country').value = e.country_code;
+      document.getElementById('ed-summary').value = e.summary||'';
+      document.getElementById('ed-pros').value    = e.pros||'';
+      document.getElementById('ed-cons').value    = e.cons||'';
+      document.getElementById('ed-bestfor').value = e.best_for||'';
+      document.getElementById('tab-editorial').scrollIntoView({behavior:'smooth'});
+    }).catch(err=>toast(err.message,true));
+  }
+
+  async function loadEditorialForEdit() {
+    const asin=document.getElementById('ed-asin').value.trim();
+    if(!asin){toast('Enter an ASIN first',true);return;}
+    fillEdForm(asin, document.getElementById('ed-country').value);
+  }
+
+  async function saveEditorial() {
+    try {
+      await api('editorial','POST',{
+        asin:         document.getElementById('ed-asin').value.trim(),
+        country_code: document.getElementById('ed-country').value,
+        summary:      document.getElementById('ed-summary').value.trim(),
+        pros:         document.getElementById('ed-pros').value.trim(),
+        cons:         document.getElementById('ed-cons').value.trim(),
+        best_for:     document.getElementById('ed-bestfor').value.trim(),
+      });
+      toast('Editorial saved ✓'); loadAllEditorial();
+    } catch(err){toast(err.message,true);}
+  }
+
+  async function deleteEditorial() {
+    const asin=document.getElementById('ed-asin').value.trim();
+    const country=document.getElementById('ed-country').value;
+    if(!asin){toast('Enter an ASIN first',true);return;}
+    if(!confirm(`Delete editorial for ${asin} / ${country}?`))return;
+    try { await api(`editorial?asin=${asin}&country=${country}`,'DELETE'); toast('Deleted ✓'); loadAllEditorial(); }
+    catch(err){toast(err.message,true);}
+  }
+  async function delEdRow(asin,country){
+    if(!confirm(`Delete editorial for ${asin} / ${country}?`))return;
+    try { await api(`editorial?asin=${asin}&country=${country}`,'DELETE'); toast('Deleted ✓'); loadAllEditorial(); }
+    catch(err){toast(err.message,true);}
+  }
+
+  // ── CATEGORIES ────────────────────────────────────────────────────────────
+  async function loadAllCategories() {
+    const f=document.getElementById('cat-filter').value;
+    try {
+      const d=await api(f?`categories?country=${f}`:'categories');
+      const tb=document.querySelector('#categoriesTable tbody');
+      tb.innerHTML = d.categories.length
+        ? d.categories.map(c=>`
+            <tr>
+              <td>${c.id}</td>
+              <td><span class="tag">${esc(c.country_code)}</span></td>
+              <td>${esc(c.name)}</td>
+              <td><code>${esc(c.slug)}</code></td>
+              <td>${esc(c.search_keyword||'—')}</td>
+              <td class="actions-cell">
+                <button class="btn btn-sm" onclick="openEditCatModal(${c.id},'${esc(c.name)}','${esc(c.slug)}','${esc(c.search_keyword||'')}')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteCat(${c.id})">Del</button>
+              </td>
+            </tr>`).join('')
+        : '<tr><td colspan="6" class="empty">No categories found.</td></tr>';
+    } catch(err){toast(err.message,true);}
+  }
+
+  async function saveCategory() {
+    try {
+      await api('categories','POST',{
+        country_code:   document.getElementById('cat-country').value,
+        name:           document.getElementById('cat-name').value.trim(),
+        slug:           document.getElementById('cat-slug').value.trim(),
+        search_keyword: document.getElementById('cat-keyword').value.trim(),
+      });
+      toast('Category saved ✓');
+      ['cat-name','cat-slug','cat-keyword'].forEach(id=>document.getElementById(id).value='');
+      loadAllCategories();
+    } catch(err){toast(err.message,true);}
+  }
+
+  function openEditCatModal(id,name,slug,kw) {
+    openModal('Edit category',
+      `<div class="field"><label>Name</label><input id="m-cat-name" value="${esc(name)}"/></div>
+       <div class="field"><label>Slug</label><input id="m-cat-slug" value="${esc(slug)}"/></div>
+       <div class="field"><label>Search keyword</label><input id="m-cat-kw" value="${esc(kw)}"/></div>`,
+      async()=>{
+        try {
+          await api(`categories?id=${id}`,'PUT',{
+            name:           document.getElementById('m-cat-name').value.trim(),
+            slug:           document.getElementById('m-cat-slug').value.trim(),
+            search_keyword: document.getElementById('m-cat-kw').value.trim(),
+          });
+          toast('Category updated ✓'); closeModal(); loadAllCategories();
+        } catch(err){toast(err.message,true);}
+      }
+    );
+  }
+  async function deleteCat(id){
+    if(!confirm(`Delete category #${id}?`))return;
+    try{ await api(`categories?id=${id}`,'DELETE'); toast('Deleted ✓'); loadAllCategories(); }
+    catch(err){toast(err.message,true);}
+  }
+
+  document.getElementById('cat-name').addEventListener('input',function(){
+    document.getElementById('cat-slug').value =
+      this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  });
+
+  // ── COUNTRIES ─────────────────────────────────────────────────────────────
+  async function loadAllCountries() {
+    try {
+      const d=await api('countries');
+      const tb=document.querySelector('#countriesTable tbody');
+      tb.innerHTML = d.countries.length
+        ? d.countries.map(c=>`
+            <tr>
+              <td><span class="badge badge-green">${esc(c.code)}</span></td>
+              <td>${esc(c.name)}</td>
+              <td>${esc(c.marketplace)}</td>
+              <td>${esc(c.currency||'—')}</td>
+              <td><code>${esc(c.associate_tag||'—')}</code></td>
+              <td class="actions-cell">
+                <button class="btn btn-sm" onclick='fillCoForm(${JSON.stringify(c).replace(/'/g,"&#039;")})'>Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="delCountry('${esc(c.code)}')">Del</button>
+              </td>
+            </tr>`).join('')
+        : '<tr><td colspan="6" class="empty">No countries found.</td></tr>';
+    } catch(err){toast(err.message,true);}
+  }
+
+  function fillCoForm(c){
+    document.getElementById('co-code').value        = c.code;
+    document.getElementById('co-name').value        = c.name;
+    document.getElementById('co-domain').value      = c.amazon_domain||'';
+    document.getElementById('co-marketplace').value = c.marketplace||'';
+    document.getElementById('co-lang').value        = c.default_language||'';
+    document.getElementById('co-currency').value    = c.currency||'';
+    document.getElementById('co-tag').value         = c.associate_tag||'';
+    document.getElementById('tab-countries').scrollIntoView({behavior:'smooth'});
+  }
+  async function saveCountry(){
+    try{
+      await api('countries','POST',{
+        code:             document.getElementById('co-code').value.trim(),
+        name:             document.getElementById('co-name').value.trim(),
+        amazon_domain:    document.getElementById('co-domain').value.trim(),
+        marketplace:      document.getElementById('co-marketplace').value.trim(),
+        default_language: document.getElementById('co-lang').value.trim(),
+        currency:         document.getElementById('co-currency').value.trim(),
+        associate_tag:    document.getElementById('co-tag').value.trim(),
+      });
+      toast('Country saved ✓'); loadAllCountries();
+    }catch(err){toast(err.message,true);}
+  }
+  async function delCountry(code){
+    if(!confirm(`Delete country "${code}"? This will also delete its categories and editorial.`))return;
+    try{ await api(`countries?code=${code}`,'DELETE'); toast('Deleted ✓'); loadAllCountries(); }
+    catch(err){toast(err.message,true);}
+  }
+
+  // ── HERO IMAGE ───────────────────────────────────────────────────────────────
+  async function loadHeroImage() {
+    try {
+      const d = await api('settings');
+      const row = (d.settings || []).find(s => s.key === 'hero_image_url');
+      const url = row ? (row.value || '') : '';
+      const preview = document.getElementById('heroPreview');
+      const urlEl   = document.getElementById('heroCurrentUrl');
+      if (url) {
+        preview.src = url;
+        urlEl.textContent = 'Current URL: ' + url;
+        document.getElementById('heroUrlInput').value = url;
+      } else {
+        preview.style.display = 'none';
+        document.getElementById('heroPreviewPlaceholder').textContent = 'No custom image set — using default SVG illustration.';
+        urlEl.textContent = '';
+      }
+    } catch(err) { toast(err.message, true); }
+  }
+
+  async function saveHeroUrl() {
+    const url = document.getElementById('heroUrlInput').value.trim();
+    if (!url) { toast('Paste a URL first', true); return; }
+    try {
+      await api('settings', 'POST', { key: 'hero_image_url', value: url });
+      toast('Hero image saved ✓');
+      loadHeroImage();
+    } catch(err) { toast(err.message, true); }
+  }
+
+  async function removeHeroImage() {
+    if (!confirm('Remove the custom hero image and restore the default SVG illustration?')) return;
+    try {
+      await api('settings', 'POST', { key: 'hero_image_url', value: '' });
+      toast('Hero image removed — SVG restored ✓');
+      document.getElementById('heroUrlInput').value = '';
+      document.getElementById('uploadPreviewWrap').style.display = 'none';
+      loadHeroImage();
+    } catch(err) { toast(err.message, true); }
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').style.borderColor = 'var(--border2)';
+    document.getElementById('dropZone').style.background = '';
+    const file = e.dataTransfer.files[0];
+    if (file) processImageFile(file);
+  }
+
+  function handleFileSelect(input) {
+    const file = input.files[0];
+    if (file) processImageFile(file);
+  }
+
+  function processImageFile(file) {
+    // Validate type
+    if (!['image/jpeg','image/webp','image/png'].includes(file.type)) {
+      toast('Only JPEG, WebP, or PNG allowed', true); return;
+    }
+    // Warn on size
+    const kb = Math.round(file.size / 1024);
+    if (kb > 800) {
+      toast(`File is ${kb} KB — recommend under 500 KB for fast load`, true);
+    }
+
+    // Show local preview
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      document.getElementById('uploadPreview').src = dataUrl;
+      document.getElementById('uploadPreviewWrap').style.display = 'block';
+
+      // Get dimensions
+      const img = new Image();
+      img.onload = () => {
+        document.getElementById('uploadFileMeta').textContent =
+          `${file.name} · ${img.width} × ${img.height}px · ${kb} KB`;
+      };
+      img.src = dataUrl;
+
+      // Upload as base64 data URL — stored in Neon site_settings
+      // Note: base64 images up to ~500KB work fine in a text column.
+      uploadBase64(dataUrl, kb);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function uploadBase64(dataUrl, kb) {
+    const prog     = document.getElementById('uploadProgress');
+    const progBar  = document.getElementById('uploadProgressBar');
+    const progText = document.getElementById('uploadProgressText');
+    prog.style.display = 'block';
+    progText.textContent = `Saving ${kb} KB image…`;
+    progBar.style.width = '30%';
+
+    try {
+      // Simulate progress
+      await new Promise(r => setTimeout(r, 300));
+      progBar.style.width = '70%';
+      await api('settings', 'POST', { key: 'hero_image_url', value: dataUrl });
+      progBar.style.width = '100%';
+      progText.textContent = 'Saved ✓';
+      toast('Hero image uploaded and saved ✓');
+      setTimeout(() => { prog.style.display = 'none'; progBar.style.width = '0%'; }, 1500);
+      loadHeroImage();
+    } catch(err) {
+      prog.style.display = 'none';
+      toast(err.message, true);
+    }
+  }
+
+  // Load hero image when tab is activated
+  const _origShowTab = showTab;
+  // Override showTab to hook hero image load
+  function showTab(name, btn) {
+    _origShowTab(name, btn);
+    if (name === 'heroimage') loadHeroImage();
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function esc(s){
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;'

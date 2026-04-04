@@ -51,10 +51,13 @@
     /* Header */
     .header { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(12px); background: color-mix(in srgb, var(--color-bg) 84%, transparent); border-bottom: 1px solid var(--color-border); }
     .header-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; }
-    .brand { display: flex; align-items: center; gap: var(--space-3); }
-    .brand-mark { width: 40px; height: 40px; border-radius: 14px; background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 30%, white)); color: white; display: grid; place-items: center; box-shadow: var(--shadow-sm); flex-shrink: 0; }
-    .brand-text strong { display: block; font-size: 1rem; line-height: 1.1; }
-    .brand-text span { display: block; color: var(--color-text-muted); font-size: var(--text-xs); }
+    .brand { display: flex; align-items: center; gap: 0; text-decoration: none; }
+    /* Logo SVG colours swap with theme */
+    .logo-a-stroke { stroke: #1a1a1a; }
+    .logo-tick     { stroke: #22c55e; }
+    .logo-word     { fill: #1a1a1a; }
+    [data-theme="dark"] .logo-a-stroke { stroke: #f0f0f0; }
+    [data-theme="dark"] .logo-word     { fill: #f0f0f0; }
     .nav-actions { display: flex; gap: var(--space-2); align-items: center; }
     .ghost-btn { width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface-2); border-radius: var(--radius-xl); }
     .button { height: 50px; padding: 0 1rem; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface-2); border-radius: var(--radius-xl); }
@@ -63,8 +66,25 @@
     .button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Hero */
-    .hero { padding: var(--space-12) 0 var(--space-10); }
-    .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--space-8); align-items: center; }
+    .hero { padding: var(--space-12) 0 var(--space-10); position: relative; overflow: hidden;
+      margin: 0 calc(-1 * (100vw - min(1180px, calc(100% - 0px))) / 2);
+      padding-left: calc((100vw - min(1180px, calc(100% - 0px))) / 2);
+      padding-right: calc((100vw - min(1180px, calc(100% - 0px))) / 2); }
+    .hero-bg { position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none; }
+    .hero-bg svg { width: 100%; height: 100%; display: block; }
+    .hero-bg-img { position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center right; display: none; }
+    .hero-bg-img.loaded { display: block; }
+    .hero-overlay { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-bg) 82%, transparent) 0%,
+        color-mix(in srgb, var(--color-bg) 60%, transparent) 50%,
+        color-mix(in srgb, var(--color-bg) 40%, transparent) 100%
+      ); }
+    .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--space-8);
+      align-items: center; position: relative; z-index: 2; }
     .eyebrow { display: inline-flex; align-items: center; gap: var(--space-2); padding: 0.42rem 0.8rem; border-radius: 999px; background: var(--color-primary-highlight); color: var(--color-primary); font-size: var(--text-xs); font-weight: 700; }
     h1 { margin: var(--space-4) 0; font-size: var(--text-xl); line-height: 1.03; max-width: 13ch; }
     .lede { margin: 0 0 var(--space-6); color: var(--color-text-muted); max-width: 62ch; }
@@ -163,18 +183,19 @@
 
   <header class="header">
     <div class="container header-inner">
-      <div class="brand" aria-label="Applianzo home">
-        <div class="brand-mark" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 7h16"/><path d="M6 7v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7"/>
-            <path d="M9 11v4"/><path d="M15 11v4"/>
-          </svg>
-        </div>
-        <div class="brand-text">
-          <strong>Applianzo</strong>
-          <span>Amazon kitchen picks by country</span>
-        </div>
-      </div>
+      <a class="brand" href="#main" aria-label="Applianzo home">
+        <!-- Applianzo logo — matches light brand identity -->
+        <svg width="160" height="40" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- A mark: left leg -->
+          <line x1="7" y1="30" x2="18" y2="8" class="logo-a-stroke" stroke-width="2.6" stroke-linecap="round"/>
+          <!-- A mark: right leg -->
+          <line x1="29" y1="30" x2="18" y2="8" class="logo-a-stroke" stroke-width="2.6" stroke-linecap="round"/>
+          <!-- Green tick crossbar replacing the A crossbar -->
+          <polyline points="11,22 16,28 25,18" class="logo-tick" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <!-- Wordmark -->
+          <text x="38" y="27" font-family="Inter,sans-serif" font-size="19" font-weight="800" letter-spacing="-0.5" class="logo-word">Applianzo</text>
+        </svg>
+      </a>
       <div class="nav-actions">
         <a class="button" href="#products">Browse</a>
         <button class="ghost-btn" id="themeToggle" aria-label="Toggle dark mode">☾</button>
@@ -184,6 +205,166 @@
 
   <main id="main" class="container">
     <section class="hero">
+
+      <!-- Background appliance scene -->
+      <div class="hero-bg" aria-hidden="true">
+        <img id="heroBgImg" class="hero-bg-img" src="" alt="" role="presentation"/>
+        <svg viewBox="0 0 1400 520" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <linearGradient id="af-body" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4b5563"/>
+              <stop offset="100%" stop-color="#1f2937"/>
+            </linearGradient>
+            <linearGradient id="pot-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#dc2626"/>
+              <stop offset="100%" stop-color="#991b1b"/>
+            </linearGradient>
+            <linearGradient id="coffee-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#292524"/>
+              <stop offset="100%" stop-color="#57534e"/>
+            </linearGradient>
+            <linearGradient id="kettle-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0ea5e9"/>
+              <stop offset="100%" stop-color="#0369a1"/>
+            </linearGradient>
+            <filter id="dropshadow">
+              <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="rgba(0,0,0,0.3)"/>
+            </filter>
+            <filter id="dropshadow-sm">
+              <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.2)"/>
+            </filter>
+          </defs>
+
+          <!-- ── KNIFE SET — far left ── -->
+          <g transform="translate(60,120)" filter="url(#dropshadow-sm)" opacity="0.9">
+            <rect x="0" y="140" width="100" height="120" rx="10" fill="#78716c"/>
+            <rect x="7" y="148" width="86" height="106" rx="7" fill="#57534e"/>
+            <rect x="22" y="154" width="8" height="82" rx="4" fill="#44403c"/>
+            <rect x="36" y="154" width="8" height="74" rx="4" fill="#44403c"/>
+            <rect x="50" y="154" width="8" height="66" rx="4" fill="#44403c"/>
+            <rect x="64" y="154" width="8" height="58" rx="4" fill="#44403c"/>
+            <polygon points="26,30 29,154 23,154" fill="#e5e7eb"/>
+            <polygon points="26,30 29,154 26,154" fill="#9ca3af"/>
+            <rect x="22" y="24" width="8" height="14" rx="2" fill="#1c1917"/>
+            <polygon points="40,46 43,154 37,154" fill="#e5e7eb"/>
+            <polygon points="40,46 43,154 40,154" fill="#9ca3af"/>
+            <rect x="36" y="40" width="8" height="14" rx="2" fill="#7c3aed"/>
+            <polygon points="54,60 57,154 51,154" fill="#e5e7eb"/>
+            <polygon points="54,60 57,154 54,154" fill="#9ca3af"/>
+            <rect x="50" y="54" width="8" height="14" rx="2" fill="#1c1917"/>
+            <polygon points="68,72 71,154 65,154" fill="#e5e7eb"/>
+            <polygon points="68,72 71,154 68,154" fill="#9ca3af"/>
+            <rect x="64" y="66" width="8" height="14" rx="2" fill="#1c1917"/>
+            <text x="50" y="278" font-family="Inter,sans-serif" font-size="13" fill="#6b7280" text-anchor="middle" font-weight="600">Knife Set</text>
+          </g>
+
+          <!-- ── AIR FRYER — left-centre ── -->
+          <g transform="translate(240,80)" filter="url(#dropshadow)" opacity="0.95">
+            <rect x="0" y="40" width="140" height="160" rx="22" fill="url(#af-body)"/>
+            <rect x="10" y="148" width="120" height="44" rx="12" fill="#374151"/>
+            <rect x="22" y="156" width="96" height="28" rx="9" fill="#111827"/>
+            <rect x="42" y="160" width="56" height="12" rx="5" fill="#4b5563"/>
+            <ellipse cx="70" cy="40" rx="46" ry="15" fill="#374151"/>
+            <ellipse cx="70" cy="37" rx="36" ry="10" fill="#1f2937"/>
+            <circle cx="52" cy="37" r="4" fill="#111827"/>
+            <circle cx="70" cy="37" r="4" fill="#111827"/>
+            <circle cx="88" cy="37" r="4" fill="#111827"/>
+            <rect x="28" y="72" width="84" height="56" rx="10" fill="#111827"/>
+            <circle cx="70" cy="100" r="18" fill="#1f2937" stroke="#22c55e" stroke-width="2.5"/>
+            <text x="70" y="105" font-family="Inter,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle" font-weight="700">200°C</text>
+            <rect x="18" y="196" width="20" height="10" rx="5" fill="#1f2937"/>
+            <rect x="102" y="196" width="20" height="10" rx="5" fill="#1f2937"/>
+            <text x="70" y="228" font-family="Inter,sans-serif" font-size="13" fill="#6b7280" text-anchor="middle" font-weight="600">Air Fryer</text>
+          </g>
+
+          <!-- ── INSTANT POT — centre ── -->
+          <g transform="translate(500,40)" filter="url(#dropshadow)" opacity="0.95">
+            <ellipse cx="100" cy="260" rx="90" ry="18" fill="#1f2937"/>
+            <rect x="10" y="80" width="180" height="180" rx="28" fill="#374151"/>
+            <rect x="20" y="88" width="66" height="164" rx="20" fill="rgba(255,255,255,0.03)"/>
+            <ellipse cx="100" cy="80" rx="90" ry="22" fill="#4b5563"/>
+            <ellipse cx="100" cy="74" rx="74" ry="16" fill="#374151"/>
+            <rect x="78" y="36" width="44" height="26" rx="13" fill="#1f2937"/>
+            <rect x="84" y="40" width="32" height="18" rx="9" fill="#374151"/>
+            <circle cx="138" cy="68" r="9" fill="#6b7280"/>
+            <circle cx="138" cy="65" r="5" fill="#9ca3af"/>
+            <rect x="30" y="118" width="140" height="92" rx="12" fill="#111827"/>
+            <rect x="40" y="128" width="90" height="46" rx="8" fill="#0f172a"/>
+            <text x="85" y="158" font-family="Inter,monospace" font-size="26" fill="#22c55e" text-anchor="middle" font-weight="700">00:30</text>
+            <circle cx="148" cy="138" r="10" fill="#1f2937" stroke="#374151" stroke-width="2"/>
+            <circle cx="148" cy="160" r="10" fill="#1f2937" stroke="#374151" stroke-width="2"/>
+            <circle cx="148" cy="182" r="10" fill="#22c55e"/>
+            <text x="100" y="232" font-family="Inter,sans-serif" font-size="12" fill="#6b7280" text-anchor="middle" font-weight="600">INSTANT POT</text>
+            <rect x="28" y="256" width="22" height="12" rx="6" fill="#111827"/>
+            <rect x="150" y="256" width="22" height="12" rx="6" fill="#111827"/>
+            <text x="100" y="292" font-family="Inter,sans-serif" font-size="13" fill="#6b7280" text-anchor="middle" font-weight="600">Pressure Cooker</text>
+          </g>
+
+          <!-- ── COFFEE MAKER — right-centre ── -->
+          <g transform="translate(820,60)" filter="url(#dropshadow)" opacity="0.95">
+            <rect x="12" y="40" width="112" height="210" rx="18" fill="url(#coffee-grad)"/>
+            <rect x="18" y="46" width="38" height="118" rx="10" fill="#1c1917" stroke="#44403c" stroke-width="1.5"/>
+            <rect x="20" y="48" width="34" height="114" rx="9" fill="#0c0a09"/>
+            <rect x="20" y="104" width="34" height="56" rx="5" fill="#0ea5e9" opacity="0.55"/>
+            <rect x="12" y="208" width="112" height="24" rx="8" fill="#1c1917"/>
+            <rect x="38" y="214" width="50" height="5" rx="2" fill="#dc2626" opacity="0.85"/>
+            <path d="M40,208 Q36,162 38,118 L90,118 Q92,162 88,208 Z" fill="#1a1a2e" stroke="#374151" stroke-width="1.5"/>
+            <path d="M44,208 Q41,165 43,124 L85,124 Q87,165 85,208 Z" fill="#0f172a" opacity="0.6"/>
+            <path d="M45,208 Q43,178 44,152 L84,152 Q85,178 83,208 Z" fill="#451a03" opacity="0.9"/>
+            <path d="M90,130 Q110,128 112,148 Q112,172 90,172" fill="none" stroke="#374151" stroke-width="8" stroke-linecap="round"/>
+            <rect x="60" y="44" width="60" height="64" rx="10" fill="#111827"/>
+            <circle cx="90" cy="72" r="16" fill="#1f2937" stroke="#22c55e" stroke-width="2"/>
+            <text x="90" y="76" font-family="Inter,sans-serif" font-size="10" fill="#22c55e" text-anchor="middle" font-weight="700">BREW</text>
+            <circle cx="70" cy="98" r="6" fill="#374151"/>
+            <circle cx="90" cy="98" r="6" fill="#374151"/>
+            <circle cx="110" cy="98" r="6" fill="#22c55e"/>
+            <text x="68" y="252" font-family="Inter,sans-serif" font-size="13" fill="#6b7280" text-anchor="middle" font-weight="600">Coffee Maker</text>
+          </g>
+
+          <!-- ── ELECTRIC KETTLE — right ── -->
+          <g transform="translate(1060,70)" filter="url(#dropshadow)" opacity="0.95">
+            <ellipse cx="88" cy="248" rx="72" ry="13" fill="#0369a1"/>
+            <path d="M28,104 Q20,178 24,240 Q58,256 124,240 Q128,178 112,104 Z" fill="url(#kettle-grad)"/>
+            <path d="M36,110 Q30,172 34,232 Q50,240 64,237 Q60,172 56,110 Z" fill="rgba(255,255,255,0.13)"/>
+            <path d="M112,124 Q148,112 156,132 Q162,150 144,156 Q130,159 112,150 Z" fill="#0284c7"/>
+            <ellipse cx="76" cy="104" rx="50" ry="14" fill="#0284c7"/>
+            <ellipse cx="76" cy="100" rx="40" ry="10" fill="#0ea5e9"/>
+            <rect x="62" y="78" width="28" height="16" rx="8" fill="#0369a1"/>
+            <path d="M28,120 Q0,126 0,162 Q0,200 28,210" fill="none" stroke="#0284c7" stroke-width="12" stroke-linecap="round"/>
+            <path d="M28,120 Q5,126 5,162 Q5,198 28,210" fill="none" stroke="#0ea5e9" stroke-width="7" stroke-linecap="round"/>
+            <rect x="72" y="130" width="16" height="90" rx="8" fill="#bae6fd" opacity="0.35"/>
+            <rect x="73" y="172" width="14" height="48" rx="7" fill="#0ea5e9" opacity="0.75"/>
+            <circle cx="88" cy="236" r="7" fill="#22c55e"/>
+            <text x="76" y="278" font-family="Inter,sans-serif" font-size="13" fill="#6b7280" text-anchor="middle" font-weight="600">Electric Kettle</text>
+          </g>
+
+          <!-- ── COOKWARE — far right ── -->
+          <g transform="translate(1260,100)" opacity="0.9">
+            <ellipse cx="80" cy="114" rx="72" ry="18" fill="#b91c1c" filter="url(#dropshadow-sm)"/>
+            <rect x="8" y="38" width="144" height="76" rx="10" fill="url(#pot-grad)"/>
+            <ellipse cx="80" cy="38" rx="72" ry="18" fill="#dc2626"/>
+            <ellipse cx="80" cy="34" rx="60" ry="13" fill="#ef4444"/>
+            <rect x="144" y="48" width="50" height="13" rx="6" fill="#7f1d1d"/>
+            <rect x="146" y="51" width="46" height="8" rx="4" fill="#991b1b"/>
+            <ellipse cx="80" cy="34" rx="50" ry="11" fill="#dc2626" opacity="0.5"/>
+            <circle cx="80" cy="22" r="10" fill="#b91c1c"/>
+            <circle cx="80" cy="20" r="6" fill="#7f1d1d"/>
+            <g transform="translate(-24,82)">
+              <ellipse cx="68" cy="78" rx="56" ry="13" fill="#78716c" filter="url(#dropshadow-sm)"/>
+              <rect x="12" y="32" width="112" height="46" rx="8" fill="#57534e"/>
+              <ellipse cx="68" cy="32" rx="56" ry="13" fill="#78716c"/>
+              <ellipse cx="68" cy="29" rx="46" ry="9" fill="#8a8380"/>
+              <rect x="112" y="40" width="42" height="10" rx="5" fill="#44403c"/>
+            </g>
+            <text x="80" y="218" font-family="Inter,sans-serif" font-size="13" fill="#6b7280" text-anchor="middle" font-weight="600">Cookware</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Gradient overlay so panels stay readable -->
+      <div class="hero-overlay"></div>
+
+      <!-- Content sits above background -->
       <div class="hero-grid">
         <div>
           <span class="eyebrow">Kitchen discovery</span>
@@ -302,7 +483,7 @@
 
   <script>
     // ─── Constants ────────────────────────────────────────────────────
-    const API_BASE = '/.netlify/functions';
+    const API_BASE = '/.netlify/functions/api';
     const COUNTRY_NAMES = { in: 'India', us: 'United States', uk: 'United Kingdom' };
 
     // ─── State ────────────────────────────────────────────────────────
@@ -561,7 +742,26 @@
     els.searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchProducts(); });
 
     els.countrySelect.addEventListener('change', () => {
-      loadCategories(els.countrySelect.value);
+      // ─── Hero image ───────────────────────────────────────────────────
+    (async function applyHeroImage() {
+      try {
+        const r = await fetch('/.netlify/functions/api/settings');
+        if (!r.ok) return;
+        const d = await r.json();
+        const url = (d.settings || {}).hero_image_url || '';
+        if (!url) return; // keep SVG default
+        const img = document.getElementById('heroBgImg');
+        const svgBg = img.nextElementSibling; // the <svg>
+        img.onload = () => {
+          img.classList.add('loaded');
+          if (svgBg) svgBg.style.display = 'none';
+        };
+        img.onerror = () => {}; // keep SVG on broken URL
+        img.src = url;
+      } catch {}
+    })();
+
+    loadCategories(els.countrySelect.value);
       els.detailSection.classList.remove('active');
     });
 
