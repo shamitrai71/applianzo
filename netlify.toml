@@ -1,0 +1,15 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Once deployed, set ALLOWED_ORIGIN in Netlify environment variables
+# to your actual site URL, e.g. https://applianzo.netlify.app
+# This restricts which origins can call your serverless functions.

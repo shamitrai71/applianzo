@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Applianzo — Kitchen Appliances &amp; Utensils</title>
+  <meta name="description" content="Discover the best kitchen appliances and utensils on Amazon — curated picks for India, the US, and the UK with honest editorial summaries." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.6rem, 1.25rem + 1.4vw, 2.4rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9;
+      --color-surface-offset: #efece7; --color-border: #d4d1ca;
+      --color-text: #28251d; --color-text-muted: #6f6d67;
+      --color-primary: #01696f; --color-primary-hover: #0c4e54;
+      --color-primary-highlight: #d9e8e5;
+      --color-editorial: #f5f0e8; --color-editorial-border: #d6c9a8;
+      --radius-md: 0.5rem; --radius-lg: 0.75rem; --radius-xl: 1rem; --radius-2xl: 1.5rem;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.06); --shadow-md: 0 10px 30px rgba(0,0,0,0.08);
+      --shadow-lg: 0 18px 50px rgba(0,0,0,0.1);
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d;
+      --color-surface-offset: #252320; --color-border: #393836;
+      --color-text: #cdccca; --color-text-muted: #8b8985;
+      --color-primary: #4f98a3; --color-primary-hover: #227f8b;
+      --color-primary-highlight: #2b3a3b;
+      --color-editorial: #252218; --color-editorial-border: #4a3f28;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.25); --shadow-md: 0 10px 30px rgba(0,0,0,0.35);
+      --shadow-lg: 0 18px 50px rgba(0,0,0,0.42);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; min-height: 100vh; font-family: 'Inter', sans-serif; font-size: var(--text-base); line-height: 1.6; color: var(--color-text); background: linear-gradient(180deg, var(--color-bg), var(--color-surface)); }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    .container { width: min(1180px, calc(100% - 2rem)); margin: 0 auto; }
+    .skip-link { position: absolute; left: -999px; top: auto; }
+    .skip-link:focus { left: 1rem; top: 1rem; padding: 0.75rem 1rem; background: var(--color-primary); color: white; border-radius: 999px; z-index: 100; }
+
+    /* Header */
+    .header { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(12px); background: color-mix(in srgb, var(--color-bg) 84%, transparent); border-bottom: 1px solid var(--color-border); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; }
+    .brand { display: flex; align-items: center; gap: var(--space-3); }
+    .brand-mark { width: 40px; height: 40px; border-radius: 14px; background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 30%, white)); color: white; display: grid; place-items: center; box-shadow: var(--shadow-sm); flex-shrink: 0; }
+    .brand-text strong { display: block; font-size: 1rem; line-height: 1.1; }
+    .brand-text span { display: block; color: var(--color-text-muted); font-size: var(--text-xs); }
+    .nav-actions { display: flex; gap: var(--space-2); align-items: center; }
+    .ghost-btn { width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface-2); border-radius: var(--radius-xl); }
+    .button { height: 50px; padding: 0 1rem; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; border: 1px solid var(--color-border); background: var(--color-surface-2); border-radius: var(--radius-xl); }
+    .button-primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    .button-primary:hover { background: var(--color-primary-hover); }
+    .button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Hero */
+    .hero { padding: var(--space-12) 0 var(--space-10); }
+    .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: var(--space-8); align-items: center; }
+    .eyebrow { display: inline-flex; align-items: center; gap: var(--space-2); padding: 0.42rem 0.8rem; border-radius: 999px; background: var(--color-primary-highlight); color: var(--color-primary); font-size: var(--text-xs); font-weight: 700; }
+    h1 { margin: var(--space-4) 0; font-size: var(--text-xl); line-height: 1.03; max-width: 13ch; }
+    .lede { margin: 0 0 var(--space-6); color: var(--color-text-muted); max-width: 62ch; }
+    .hero-panel, .panel, .product-card, .info-card { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-2xl); box-shadow: var(--shadow-md); }
+    .hero-panel { padding: var(--space-5); }
+    .search-grid { display: grid; grid-template-columns: 170px 1fr auto; gap: var(--space-3); }
+    .country, .field { width: 100%; height: 50px; padding: 0 1rem; border: 1px solid var(--color-border); background: var(--color-surface-2); border-radius: var(--radius-xl); }
+
+    /* Sections */
+    .section { padding: var(--space-8) 0; }
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+    .section-head h2 { margin: 0; font-size: var(--text-lg); }
+    .section-head p { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); }
+
+    /* Categories */
+    .category-row { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+    .chip { padding: 0.8rem 1.2rem; border-radius: 999px; background: var(--color-surface-2); border: 1px solid var(--color-border); font-weight: 600; text-align: center; cursor: pointer; white-space: nowrap; }
+    .chip.active { background: var(--color-primary-highlight); color: var(--color-primary); border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border)); }
+    .chip-skeleton { padding: 0.8rem 2rem; border-radius: 999px; background: var(--color-surface-offset); border: 1px solid var(--color-border); }
+
+    /* Product grid */
+    .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+    .product-card { overflow: hidden; display: flex; flex-direction: column; }
+    .product-image { aspect-ratio: 4 / 3; background: linear-gradient(135deg, var(--color-primary-highlight), transparent), var(--color-surface-offset); display: grid; place-items: center; }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; }
+    .product-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); flex: 1; }
+    .pill { display: inline-flex; width: fit-content; padding: 0.24rem 0.65rem; border-radius: 999px; background: var(--color-primary-highlight); color: var(--color-primary); font-size: var(--text-xs); font-weight: 700; }
+    .product-title { margin: 0; font-size: 1rem; line-height: 1.35; }
+    .muted { color: var(--color-text-muted); font-size: var(--text-sm); }
+    .product-actions { display: flex; gap: var(--space-2); margin-top: auto; flex-wrap: wrap; }
+    .product-actions .button { flex: 1; min-width: 130px; }
+
+    /* Info cards */
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+    .info-card { padding: var(--space-5); box-shadow: var(--shadow-sm); }
+
+    /* Detail panel */
+    .detail { display: none; grid-template-columns: 0.95fr 1.05fr; gap: var(--space-5); margin-top: var(--space-6); }
+    .detail.active { display: grid; }
+    .panel { padding: var(--space-5); }
+    .gallery-main { aspect-ratio: 1 / 1; background: var(--color-surface-offset); border: 1px solid var(--color-border); border-radius: 22px; overflow: hidden; }
+    .gallery-main img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin-top: var(--space-3); }
+    .thumb { aspect-ratio: 1 / 1; border-radius: 18px; overflow: hidden; background: var(--color-surface-offset); border: 1px solid var(--color-border); cursor: pointer; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb.active { border-color: var(--color-primary); }
+    .detail-title { margin: 0.65rem 0; font-size: var(--text-lg); }
+    .feature-list { padding-left: 1.2rem; margin: 0; }
+    .stack { display: flex; flex-direction: column; gap: var(--space-4); }
+
+    /* Editorial block */
+    .editorial-block { background: var(--color-editorial); border: 1px solid var(--color-editorial-border); border-radius: var(--radius-lg); padding: var(--space-4); margin: var(--space-4) 0; }
+    .editorial-block h4 { margin: 0 0 var(--space-3); font-size: var(--text-sm); font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .editorial-summary { margin: 0 0 var(--space-3); font-size: var(--text-sm); line-height: 1.6; }
+    .editorial-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-top: var(--space-3); }
+    .editorial-col strong { display: block; font-size: var(--text-xs); font-weight: 700; margin-bottom: var(--space-1); }
+    .editorial-col p { margin: 0; font-size: var(--text-xs); color: var(--color-text-muted); }
+    .best-for-tag { display: inline-block; margin-top: var(--space-2); background: var(--color-primary-highlight); color: var(--color-primary); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: var(--text-xs); font-weight: 600; }
+
+    /* Misc */
+    .empty-state { padding: var(--space-12) var(--space-4); border: 1px dashed var(--color-border); border-radius: var(--radius-2xl); text-align: center; background: var(--color-surface-2); color: var(--color-text-muted); }
+    .status { min-height: 1.5em; color: var(--color-text-muted); font-size: var(--text-sm); margin-top: var(--space-3); }
+
+    /* Affiliate disclosure bar */
+    .disclosure { background: var(--color-surface-offset); border-bottom: 1px solid var(--color-border); padding: 0.6rem 0; text-align: center; font-size: var(--text-xs); color: var(--color-text-muted); }
+
+    /* Footer */
+    footer { padding: var(--space-10) 0 var(--space-6); color: var(--color-text-muted); font-size: var(--text-sm); border-top: 1px solid var(--color-border); margin-top: var(--space-8); }
+    .footer-inner { display: flex; flex-direction: column; gap: var(--space-4); }
+    .footer-links { display: flex; gap: var(--space-6); flex-wrap: wrap; }
+    .footer-links a { color: var(--color-text-muted); text-decoration: underline; text-underline-offset: 3px; }
+    .footer-links a:hover { color: var(--color-text); }
+    .footer-disclosure { max-width: 72ch; line-height: 1.6; }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .hero-grid, .detail.active, .info-grid { grid-template-columns: 1fr; }
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .search-grid { grid-template-columns: 1fr; }
+      .product-grid { grid-template-columns: 1fr; }
+      .header-inner { flex-direction: column; align-items: flex-start; }
+      .gallery-strip { grid-template-columns: repeat(3, 1fr); }
+      .editorial-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Affiliate disclosure — required by Amazon Associates Program -->
+  <div class="disclosure" role="note">
+    As an Amazon Associate, Applianzo earns from qualifying purchases. Prices and availability are accurate at the time of search and may change.
+  </div>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="header">
+    <div class="container header-inner">
+      <div class="brand" aria-label="Applianzo home">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7h16"/><path d="M6 7v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7"/>
+            <path d="M9 11v4"/><path d="M15 11v4"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <strong>Applianzo</strong>
+          <span>Amazon kitchen picks by country</span>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <a class="button" href="#products">Browse</a>
+        <button class="ghost-btn" id="themeToggle" aria-label="Toggle dark mode">☾</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow">Kitchen discovery</span>
+          <h1>Find the right kitchen gear for your country.</h1>
+          <p class="lede">Curated Amazon picks for India, the US, and the UK — with editorial summaries, pros, cons, and honest buying notes.</p>
+          <div class="hero-panel">
+            <div class="search-grid">
+              <select id="countrySelect" class="country" aria-label="Choose country">
+                <option value="in">🇮🇳 India</option>
+                <option value="us">🇺🇸 United States</option>
+                <option value="uk">🇬🇧 United Kingdom</option>
+              </select>
+              <input id="searchInput" class="field" type="text" value="air fryer" placeholder="Search kitchen products" aria-label="Search products" />
+              <button id="searchBtn" class="button button-primary">Search</button>
+            </div>
+            <p id="statusText" class="status" role="status" aria-live="polite">Ready — choose a country and search.</p>
+          </div>
+        </div>
+        <aside class="hero-panel" aria-label="About Applianzo">
+          <span class="pill">How it works</span>
+          <div class="stack" style="margin-top: 1rem;">
+            <div><strong>Search</strong> any kitchen product across India, the US, or the UK.</div>
+            <div><strong>Compare</strong> real Amazon prices, availability, and product features.</div>
+            <div><strong>Read</strong> our editorial summaries — pros, cons, and who it's best for.</div>
+            <div><strong>Buy</strong> directly on Amazon via our affiliate links.</div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="categoryHeading">
+      <div class="section-head">
+        <div>
+          <h2 id="categoryHeading">Browse by category</h2>
+          <p>Categories update by country — switch your selection above to see what's available.</p>
+        </div>
+      </div>
+      <div class="category-row" id="categoryRow" role="list" aria-label="Product categories">
+        <!-- Populated dynamically from /categories endpoint -->
+        <span class="chip-skeleton" aria-hidden="true" style="width:100px;height:42px;"></span>
+        <span class="chip-skeleton" aria-hidden="true" style="width:80px;height:42px;"></span>
+        <span class="chip-skeleton" aria-hidden="true" style="width:110px;height:42px;"></span>
+      </div>
+    </section>
+
+    <section class="section" id="products" aria-labelledby="productsHeading">
+      <div class="section-head">
+        <div>
+          <h2 id="productsHeading">Search results</h2>
+          <p id="resultsSubhead">Run a search to discover products.</p>
+        </div>
+      </div>
+      <div id="results" class="product-grid" role="list"></div>
+      <div id="emptyState" class="empty-state" aria-live="polite">Search for a kitchen product above to get started.</div>
+
+      <div id="detailSection" class="detail" aria-live="polite" aria-label="Product detail">
+        <div class="panel">
+          <div class="gallery-main"><img id="detailImage" src="" alt="" /></div>
+          <div id="galleryStrip" class="gallery-strip"></div>
+        </div>
+        <div class="panel">
+          <span id="detailCountry" class="pill">Marketplace</span>
+          <h3 id="detailTitle" class="detail-title"></h3>
+          <p id="detailBrand" class="muted"></p>
+          <p id="detailPrice" style="margin: 0.75rem 0; font-size: var(--text-lg); font-weight: 800;"></p>
+          <p id="detailAvailability" class="muted"></p>
+          <div style="display:flex; gap: var(--space-2); flex-wrap: wrap; margin: 0.75rem 0;">
+            <span id="detailPrime" class="pill"></span>
+            <span id="detailAsin" class="pill"></span>
+          </div>
+
+          <!-- Editorial block — shown only when editorial data exists -->
+          <div id="editorialBlock" class="editorial-block" style="display:none;">
+            <h4>Editorial review</h4>
+            <p id="editorialSummary" class="editorial-summary"></p>
+            <div class="editorial-row">
+              <div class="editorial-col">
+                <strong>✓ Pros</strong>
+                <p id="editorialPros"></p>
+              </div>
+              <div class="editorial-col">
+                <strong>✗ Cons</strong>
+                <p id="editorialCons"></p>
+              </div>
+            </div>
+            <p id="editorialBestFor" class="best-for-tag" style="display:none;"></p>
+          </div>
+
+          <h4 style="margin: 1rem 0 0.75rem;">Features</h4>
+          <ul id="detailFeatures" class="feature-list"></ul>
+
+          <div class="product-actions" style="margin-top: 1.5rem;">
+            <a id="amazonLink" class="button button-primary" href="#" target="_blank" rel="noopener noreferrer sponsored">View on Amazon</a>
+            <button id="closeDetail" class="button">Close</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-links">
+        <a href="#main">Home</a>
+        <a href="#products">Products</a>
+        <!-- Add these pages before launch -->
+        <a href="/privacy">Privacy policy</a>
+        <a href="/terms">Terms of use</a>
+      </div>
+      <p class="footer-disclosure">
+        Applianzo is a participant in the Amazon Associates Programme, an affiliate advertising programme designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon. Product prices, availability, and ratings are sourced from Amazon and may change at any time.
+      </p>
+      <p>&copy; <span id="year"></span> Applianzo. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // ─── Constants ────────────────────────────────────────────────────
+    const API_BASE = '/.netlify/functions';
+    const COUNTRY_NAMES = { in: 'India', us: 'United States', uk: 'United Kingdom' };
+
+    // ─── State ────────────────────────────────────────────────────────
+    const state = { country: 'in', results: [] };
+
+    // ─── Element refs ─────────────────────────────────────────────────
+    const els = {
+      themeToggle:      document.getElementById('themeToggle'),
+      countrySelect:    document.getElementById('countrySelect'),
+      searchInput:      document.getElementById('searchInput'),
+      searchBtn:        document.getElementById('searchBtn'),
+      statusText:       document.getElementById('statusText'),
+      categoryRow:      document.getElementById('categoryRow'),
+      results:          document.getElementById('results'),
+      resultsSubhead:   document.getElementById('resultsSubhead'),
+      emptyState:       document.getElementById('emptyState'),
+      detailSection:    document.getElementById('detailSection'),
+      detailImage:      document.getElementById('detailImage'),
+      galleryStrip:     document.getElementById('galleryStrip'),
+      detailCountry:    document.getElementById('detailCountry'),
+      detailTitle:      document.getElementById('detailTitle'),
+      detailBrand:      document.getElementById('detailBrand'),
+      detailPrice:      document.getElementById('detailPrice'),
+      detailAvailability: document.getElementById('detailAvailability'),
+      detailPrime:      document.getElementById('detailPrime'),
+      detailAsin:       document.getElementById('detailAsin'),
+      detailFeatures:   document.getElementById('detailFeatures'),
+      amazonLink:       document.getElementById('amazonLink'),
+      closeDetail:      document.getElementById('closeDetail'),
+      editorialBlock:   document.getElementById('editorialBlock'),
+      editorialSummary: document.getElementById('editorialSummary'),
+      editorialPros:    document.getElementById('editorialPros'),
+      editorialCons:    document.getElementById('editorialCons'),
+      editorialBestFor: document.getElementById('editorialBestFor'),
+    };
+
+    // ─── Theme ────────────────────────────────────────────────────────
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      els.themeToggle.textContent = theme === 'dark' ? '☀' : '☾';
+      els.themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+
+    function toggleTheme() {
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('applianzo-theme', next);
+      applyTheme(next);
+    }
+
+    // Restore saved theme on load
+    const savedTheme = localStorage.getItem('applianzo-theme');
+    if (savedTheme) applyTheme(savedTheme);
+
+    // ─── Utilities ────────────────────────────────────────────────────
+    function setStatus(text) { els.statusText.textContent = text; }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ─── Categories ───────────────────────────────────────────────────
+    async function loadCategories(country) {
+      // Show skeletons while loading
+      els.categoryRow.innerHTML = [1,2,3].map(() =>
+        `<span class="chip-skeleton" aria-hidden="true" style="width:${80 + Math.random()*60|0}px;height:42px;"></span>`
+      ).join('');
+
+      try {
+        const res = await fetch(`${API_BASE}/categories?country=${encodeURIComponent(country)}`);
+        if (!res.ok) throw new Error('Categories unavailable');
+        const data = await res.json();
+        renderCategories(data.categories || []);
+      } catch {
+        // Fallback to static categories if the endpoint isn't deployed yet
+        renderCategories(getFallbackCategories(country));
+      }
+    }
+
+    function getFallbackCategories(country) {
+      const all = {
+        in: [
+          { name: 'Air Fryers', search_keyword: 'air fryer' },
+          { name: 'Knife Sets', search_keyword: 'knife set' },
+          { name: 'Cookware', search_keyword: 'cookware set' },
+        ],
+        us: [
+          { name: 'Air Fryers', search_keyword: 'air fryer' },
+          { name: 'Coffee Makers', search_keyword: 'coffee maker' },
+          { name: 'Cookware', search_keyword: 'cookware set' },
+        ],
+        uk: [
+          { name: 'Air Fryers', search_keyword: 'air fryer' },
+          { name: 'Mixer Grinders', search_keyword: 'mixer grinder' },
+          { name: 'Cookware', search_keyword: 'cookware set' },
+        ],
+      };
+      return all[country] || all.in;
+    }
+
+    function renderCategories(categories) {
+      if (!categories.length) {
+        els.categoryRow.innerHTML = '<p class="muted">No categories found.</p>';
+        return;
+      }
+      els.categoryRow.innerHTML = categories.map((cat, i) =>
+        `<button class="chip${i === 0 ? ' active' : ''}" data-keyword="${escapeHtml(cat.search_keyword)}" role="listitem">
+          ${escapeHtml(cat.name)}
+        </button>`
+      ).join('');
+    }
+
+    // ─── Product card ─────────────────────────────────────────────────
+    function productCard(item) {
+      const features = (item.features || []).slice(0, 3)
+        .map(f => `<li>${escapeHtml(f)}</li>`).join('');
+      return `
+        <article class="product-card" role="listitem">
+          <div class="product-image">
+            ${item.image
+              ? `<img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" width="600" height="450">`
+              : `<div class="muted" aria-hidden="true">No image</div>`}
+          </div>
+          <div class="product-body">
+            <span class="pill">${escapeHtml(COUNTRY_NAMES[state.country] || state.country)}</span>
+            <h3 class="product-title">${escapeHtml(item.title || 'Untitled product')}</h3>
+            <div class="muted">${escapeHtml(item.price || 'Price unavailable')}</div>
+            <div class="muted">${escapeHtml(item.availability || '')}</div>
+            ${features ? `<ul class="feature-list">${features}</ul>` : ''}
+            <div class="product-actions">
+              <button class="button button-primary" data-asin="${escapeHtml(item.asin)}" aria-label="View details for ${escapeHtml(item.title)}">
+                View details
+              </button>
+              <a class="button" href="${escapeHtml(item.url || '#')}" target="_blank" rel="noopener noreferrer sponsored" aria-label="View ${escapeHtml(item.title)} on Amazon">
+                Amazon
+              </a>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function renderResults(items) {
+      state.results = items;
+      els.results.innerHTML = items.map(productCard).join('');
+      els.emptyState.style.display = items.length ? 'none' : 'block';
+      if (items.length) {
+        els.resultsSubhead.textContent = `${items.length} product${items.length !== 1 ? 's' : ''} in ${COUNTRY_NAMES[state.country]}`;
+      }
+    }
+
+    // ─── Detail panel ─────────────────────────────────────────────────
+    function renderDetail(product) {
+      els.detailSection.classList.add('active');
+      els.detailCountry.textContent = COUNTRY_NAMES[state.country] || state.country;
+      els.detailTitle.textContent = product.title || 'Untitled product';
+      els.detailBrand.textContent = product.brand ? `Brand: ${product.brand}` : '';
+      els.detailPrice.textContent = product.price || 'Price unavailable';
+      els.detailAvailability.textContent = product.availability || '';
+      els.detailPrime.textContent = product.primeEligible ? '✓ Prime eligible' : '';
+      els.detailPrime.style.display = product.primeEligible ? '' : 'none';
+      els.detailAsin.textContent = `ASIN: ${product.asin || ''}`;
+      els.detailImage.src = product.image || '';
+      els.detailImage.alt = product.title || 'Product image';
+      els.amazonLink.href = product.url || '#';
+      els.detailFeatures.innerHTML = (product.features || [])
+        .map(f => `<li>${escapeHtml(f)}</li>`).join('') || '<li>No features listed.</li>';
+
+      // Gallery thumbnails
+      const gallery = [product.image, ...(product.gallery || [])].filter(Boolean).slice(0, 4);
+      els.galleryStrip.innerHTML = gallery.map((src, i) =>
+        `<div class="thumb${i === 0 ? ' active' : ''}" data-src="${escapeHtml(src)}" role="button" tabindex="0" aria-label="Product image ${i + 1}">
+          <img src="${escapeHtml(src)}" alt="Product image ${i + 1}" loading="lazy" width="200" height="200">
+        </div>`
+      ).join('');
+
+      // Editorial content
+      const ed = product.editorial;
+      if (ed && (ed.summary || ed.pros || ed.cons)) {
+        els.editorialBlock.style.display = 'block';
+        els.editorialSummary.textContent = ed.summary || '';
+        els.editorialPros.textContent = ed.pros || '—';
+        els.editorialCons.textContent = ed.cons || '—';
+        if (ed.best_for) {
+          els.editorialBestFor.textContent = `Best for: ${ed.best_for}`;
+          els.editorialBestFor.style.display = 'inline-block';
+        } else {
+          els.editorialBestFor.style.display = 'none';
+        }
+      } else {
+        els.editorialBlock.style.display = 'none';
+      }
+
+      els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ─── Search ───────────────────────────────────────────────────────
+    async function searchProducts() {
+      const country = els.countrySelect.value;
+      const q = els.searchInput.value.trim();
+      state.country = country;
+
+      if (!q) { setStatus('Enter a search term first.'); return; }
+
+      setStatus(`Searching ${COUNTRY_NAMES[country]} for "${q}"…`);
+      els.searchBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/search?country=${encodeURIComponent(country)}&q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          setStatus(data.message || 'Search failed. Check your Netlify function logs.');
+          renderResults([]);
+          return;
+        }
+
+        renderResults(data.items || []);
+        const count = (data.items || []).length;
+        setStatus(count
+          ? `Found ${count} product${count !== 1 ? 's' : ''} in ${COUNTRY_NAMES[country]}.${data.cached ? ' (cached)' : ''}`
+          : `No products found for "${q}" in ${COUNTRY_NAMES[country]}.`
+        );
+      } catch {
+        renderResults([]);
+        setStatus('Could not reach Netlify Functions. Deploy the functions and verify your environment variables.');
+      } finally {
+        els.searchBtn.disabled = false;
+      }
+    }
+
+    // ─── Product detail ───────────────────────────────────────────────
+    async function loadProduct(asin) {
+      setStatus(`Loading details for ${asin}…`);
+      try {
+        const res = await fetch(`${API_BASE}/product?country=${encodeURIComponent(state.country)}&asin=${encodeURIComponent(asin)}`);
+        const data = await res.json();
+        if (!res.ok) {
+          setStatus(data.message || 'Product not found.');
+          return;
+        }
+        renderDetail(data);
+        setStatus(`Showing details for ${data.title || asin}.`);
+      } catch {
+        setStatus('Could not load product details. Check your Netlify deployment logs.');
+      }
+    }
+
+    // ─── Event listeners ──────────────────────────────────────────────
+    els.themeToggle.addEventListener('click', toggleTheme);
+
+    els.searchBtn.addEventListener('click', searchProducts);
+    els.searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchProducts(); });
+
+    els.countrySelect.addEventListener('change', () => {
+      loadCategories(els.countrySelect.value);
+      els.detailSection.classList.remove('active');
+    });
+
+    els.categoryRow.addEventListener('click', e => {
+      const chip = e.target.closest('[data-keyword]');
+      if (!chip) return;
+      els.categoryRow.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      els.searchInput.value = chip.dataset.keyword;
+      searchProducts();
+    });
+
+    els.results.addEventListener('click', e => {
+      const btn = e.target.closest('[data-asin]');
+      if (btn) loadProduct(btn.dataset.asin);
+    });
+
+    els.closeDetail.addEventListener('click', () => {
+      els.detailSection.classList.remove('active');
+      els.detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    // Gallery thumbnail switcher
+    els.galleryStrip.addEventListener('click', e => {
+      const thumb = e.target.closest('.thumb[data-src]');
+      if (!thumb) return;
+      els.detailImage.src = thumb.dataset.src;
+      els.galleryStrip.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+      thumb.classList.add('active');
+    });
+
+    els.galleryStrip.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const thumb = e.target.closest('.thumb[data-src]');
+        if (thumb) thumb.click();
+      }
+    });
+
+    // ─── Init ─────────────────────────────────────────────────────────
+    loadCategories(els.countrySelect.value);
+  </script>
+</body>
+</html>

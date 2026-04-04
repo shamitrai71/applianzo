@@ -1,0 +1,17 @@
+{
+  "name": "applianzo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Applianzo starter project for GitHub, Netlify, and Neon",
+  "scripts": {
+    "dev": "netlify dev",
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "amazon-paapi": "^1.0.12"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.1"
+  }
+}
