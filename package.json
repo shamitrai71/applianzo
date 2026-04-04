@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "0.10.4",
-    "amazon-paapi": "1.0.11"
+    "amazon-paapi": "^1.0.10"
   },
   "devDependencies": {
     "netlify-cli": "17.38.1"
