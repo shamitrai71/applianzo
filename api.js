@@ -31,7 +31,14 @@ const { neon }    = require('@neondatabase/serverless');
 const amazonPaapi = require('amazon-paapi');
 
 // ── Config ─────────────────────────────────────────────────────────────────────
-const ALLOWED_COUNTRIES = ['in', 'us', 'uk'];
+// All Amazon-present country codes.  Each maps to one of 3 PA-API marketplaces.
+const COUNTRY_PAAPI = {
+  in:'in', us:'us', ca:'us', mx:'us', br:'us', jp:'us', au:'us', sg:'us',
+  uk:'uk', de:'uk', fr:'uk', it:'uk', es:'uk', nl:'uk', pl:'uk', se:'uk',
+  be:'uk', tr:'uk', ae:'uk', sa:'uk', eg:'uk', za:'uk',
+};
+const ALLOWED_COUNTRIES = Object.keys(COUNTRY_PAAPI);
+
 const MARKETPLACES = {
   in: { host: 'webservices.amazon.in',    region: 'eu-west-1', marketplace: 'www.amazon.in',    envTag: 'AMAZON_TAG_IN' },
   us: { host: 'webservices.amazon.com',   region: 'us-east-1', marketplace: 'www.amazon.com',   envTag: 'AMAZON_TAG_US' },
@@ -54,7 +61,9 @@ function jsonRes(statusCode, body) {
 
 function validateCountry(raw) {
   const code = (raw || '').toLowerCase().trim();
-  return ALLOWED_COUNTRIES.includes(code) ? { valid: true, code } : { valid: false, code: null };
+  if (!ALLOWED_COUNTRIES.includes(code)) return { valid: false, code: null, paapi: null };
+  const paapi = COUNTRY_PAAPI[code] || code;
+  return { valid: true, code, paapi };
 }
 
 function buildCommonParams(countryCode, countryConfig) {
@@ -94,7 +103,7 @@ async function getEditorialByAsin(countryCode, asin) {
 }
 async function getCategoriesByCountry(countryCode) {
   const sql = getDb();
-  return sql`select id,name,slug,search_keyword from categories where country_code=${countryCode} order by name asc`;
+  return sql`select id,name,slug,search_keyword,group_name,search_index from categories where country_code=${countryCode} order by group_name asc, name asc`;
 }
 
 // ── Cache ──────────────────────────────────────────────────────────────────────
@@ -130,23 +139,25 @@ function cacheStats() {
 
 // ── Public handlers ────────────────────────────────────────────────────────────
 async function handleCategories(params) {
-  const { valid, code: country } = validateCountry(params.country);
-  if (!valid) return jsonRes(400, { message: 'Invalid country' });
+  const { valid, code: country, paapi } = validateCountry(params.country);
+  if (!valid) return jsonRes(400, { message: 'Invalid country code' });
   if (!process.env.NEON_DATABASE_URL) return jsonRes(500, { message: 'Missing NEON_DATABASE_URL' });
-  const cached = cacheGet('categories', `categories:${country}`);
-  if (cached) return jsonRes(200, { country, categories: cached, cached: true });
+  // Categories are stored under the paapi marketplace code (in/us/uk)
+  const cacheKey = `categories:${paapi}`;
+  const cached = cacheGet('categories', cacheKey);
+  if (cached) return jsonRes(200, { country, paapi, categories: cached, cached: true });
   try {
-    const categories = await getCategoriesByCountry(country);
-    cacheSet('categories', `categories:${country}`, categories);
-    return jsonRes(200, { country, categories });
+    const categories = await getCategoriesByCountry(paapi);
+    cacheSet('categories', cacheKey, categories);
+    return jsonRes(200, { country, paapi, categories });
   } catch (err) {
     return jsonRes(500, { message: 'Categories lookup failed', error: err.message });
   }
 }
 
 async function handleSearch(params) {
-  const { valid, code: country } = validateCountry(params.country);
-  if (!valid) return jsonRes(400, { message: 'Invalid country' });
+  const { valid, code: country, paapi } = validateCountry(params.country);
+  if (!valid) return jsonRes(400, { message: 'Invalid country code' });
   const q = (params.q || '').trim();
   if (!q) return jsonRes(400, { message: 'Missing parameter: q' });
   if (q.length > 200) return jsonRes(400, { message: 'Query too long' });
@@ -161,9 +172,25 @@ async function handleSearch(params) {
   if (cached) return jsonRes(200, { ...cached, cached: true });
 
   try {
-    const cfg = await getCountryConfig(country).catch(() => null);
-    const data = await amazonPaapi.SearchItems(buildCommonParams(country, cfg), {
-      Keywords: q, SearchIndex: 'Kitchen', ItemCount: 12,
+    const cfg = await getCountryConfig(paapi).catch(() => null);
+    // Resolve SearchIndex from category slug, default HomeAndKitchen
+    const INDEX_MAP = {
+      Kitchen:'HomeAndKitchen', HomeAndKitchen:'HomeAndKitchen',
+      Appliances:'Appliances', Tools:'Tools',
+      Lighting:'Lighting', HomeImprovement:'HomeImprovement', Electronics:'Electronics',
+    };
+    let paApiIndex = 'HomeAndKitchen';
+    const slugParam = (params && params.slug) ? params.slug : '';
+    if (slugParam) {
+      try {
+        const sqlDb = getDb();
+        const cr = await sqlDb`select search_index from categories where country_code=${country} and slug=${slugParam} limit 1`;
+        if (cr[0]?.search_index) paApiIndex = INDEX_MAP[cr[0].search_index] || 'HomeAndKitchen';
+      } catch {}
+    }
+
+    const data = await amazonPaapi.SearchItems(buildCommonParams(paapi, cfg), {
+      Keywords: q, SearchIndex: paApiIndex, ItemCount: 12,
       Resources: ['Images.Primary.Medium','ItemInfo.Title','ItemInfo.Features',
         'Offers.Listings.Price','Offers.Listings.Availability.Message'],
     });
@@ -176,7 +203,7 @@ async function handleSearch(params) {
       availability: i?.Offers?.Listings?.[0]?.Availability?.Message || null,
       url: i?.DetailPageURL || '',
     }));
-    const result = { country, query: q, items, errors: data?.Errors || [] };
+    const result = { country, query: q, slug: slugParam, items, errors: data?.Errors || [] };
     cacheSet('search', cacheKey, result);
     return jsonRes(200, result);
   } catch (err) {
@@ -185,8 +212,8 @@ async function handleSearch(params) {
 }
 
 async function handleProduct(params) {
-  const { valid, code: country } = validateCountry(params.country);
-  if (!valid) return jsonRes(400, { message: 'Invalid country' });
+  const { valid, code: country, paapi } = validateCountry(params.country);
+  if (!valid) return jsonRes(400, { message: 'Invalid country code' });
   const asin = (params.asin || '').trim().toUpperCase();
   if (!asin) return jsonRes(400, { message: 'Missing parameter: asin' });
   if (!/^[A-Z0-9]{10}$/.test(asin)) return jsonRes(400, { message: 'Invalid ASIN format' });
@@ -198,8 +225,8 @@ async function handleProduct(params) {
   if (cached) return jsonRes(200, { ...cached, cached: true });
 
   try {
-    const cfg  = await getCountryConfig(country).catch(() => null);
-    const data = await amazonPaapi.GetItems(buildCommonParams(country, cfg), {
+    const cfg  = await getCountryConfig(paapi).catch(() => null);
+    const data = await amazonPaapi.GetItems(buildCommonParams(paapi, cfg), {
       ItemIds: [asin], ItemIdType: 'ASIN',
       Resources: ['Images.Primary.Large','Images.Variants.Large','ItemInfo.Title',
         'ItemInfo.Features','ItemInfo.ByLineInfo','ItemInfo.ProductInfo',
@@ -209,9 +236,9 @@ async function handleProduct(params) {
     });
     const item = data?.ItemsResult?.Items?.[0];
     if (!item) return jsonRes(404, { message: 'Product not found', errors: data?.Errors || [] });
-    const editorial = await getEditorialByAsin(country, asin).catch(() => null);
+    const editorial = await getEditorialByAsin(paapi, asin).catch(() => null);
     const result = {
-      asin: item.ASIN, parentAsin: item?.ParentASIN || null,
+      asin: item.ASIN, parentAsin: item?.ParentASIN || null, paapi,
       title: item?.ItemInfo?.Title?.DisplayValue || '',
       brand: item?.ItemInfo?.ByLineInfo?.Brand?.DisplayValue || '',
       image: item?.Images?.Primary?.Large?.URL || '',
@@ -282,20 +309,23 @@ async function adminDeleteEditorial(params) {
 async function adminGetCategories(params) {
   const sql = getDb();
   const r = params.country
-    ? await sql`select * from categories where country_code=${params.country} order by name asc`
-    : await sql`select * from categories order by country_code,name asc`;
+    ? await sql`select * from categories where country_code=${params.country} order by group_name asc, name asc`
+    : await sql`select * from categories order by country_code, group_name asc, name asc`;
   return jsonRes(200, { categories: r });
 }
 
 async function adminCreateCategory(body) {
-  const { country_code, name, slug, search_keyword } = body||{};
+  const { country_code, name, slug, search_keyword, group_name, search_index } = body||{};
   if (!country_code||!name||!slug) return jsonRes(400, { message: 'country_code, name, slug required' });
   const sql = getDb();
   const r = await sql`
-    insert into categories (country_code,name,slug,search_keyword)
-    values (${country_code},${name},${slug},${search_keyword||null})
+    insert into categories (country_code,name,slug,search_keyword,group_name,search_index)
+    values (${country_code},${name},${slug},${search_keyword||null},
+            ${group_name||'Kitchen Appliances'},${search_index||'HomeAndKitchen'})
     on conflict (country_code,slug) do update set
-      name=excluded.name, search_keyword=excluded.search_keyword, updated_at=now()
+      name=excluded.name, search_keyword=excluded.search_keyword,
+      group_name=excluded.group_name, search_index=excluded.search_index,
+      updated_at=now()
     returning *`;
   cacheInvalidate('categories', `categories:${country_code}`);
   return jsonRes(200, { message: 'Category saved', category: r[0] });
@@ -304,13 +334,15 @@ async function adminCreateCategory(body) {
 async function adminUpdateCategory(params, body) {
   const id = parseInt(params.id, 10);
   if (!id) return jsonRes(400, { message: 'id required' });
-  const { name, slug, search_keyword } = body||{};
+  const { name, slug, search_keyword, group_name, search_index } = body||{};
   const sql = getDb();
   const r = await sql`
     update categories set
       name=coalesce(${name||null},name),
       slug=coalesce(${slug||null},slug),
       search_keyword=coalesce(${search_keyword||null},search_keyword),
+      group_name=coalesce(${group_name||null},group_name),
+      search_index=coalesce(${search_index||null},search_index),
       updated_at=now()
     where id=${id} returning *`;
   if (r[0]) cacheInvalidate('categories', `categories:${r[0].country_code}`);
